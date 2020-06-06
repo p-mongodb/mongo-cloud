@@ -23,7 +23,7 @@ module MongoCloud
         usage('no command given')
       end
 
-      commands = %w(org proj cluster)
+      commands = %w(org proj cluster whitelist)
       if commands.include?(command)
         send(command, argv)
       else
@@ -88,6 +88,37 @@ module MongoCloud
         ap client.list_clusters(project_id: options[:project_id])
       when 'show'
         ap client.get_cluster(project_id: options[:project_id], name: argv.shift)
+      else
+        raise 'bad usage'
+      end
+    end
+
+    def whitelist(argv)
+      options = {}
+      parser = OptionParser.new do |opts|
+        configure_global_options(opts)
+
+        opts.on('-p', '--project=PROJECT', String, 'Project ID') do |v|
+          options[:project_id] = v
+        end
+      end.parse!(argv)
+
+      client = Client.new(**global_options)
+
+      case argv.shift
+      when 'list'
+        ap client.list_whitelist_entries(project_id: options[:project_id])
+      when 'show'
+        ap client.show_whitelist_entry(project_id: options[:project_id], name: argv.shift)
+      when 'add'
+        params = {
+          project_id: options[:project_id],
+        }
+        target = argv.shift
+        if target =~ /\A\d+\.\d+\.\d+\.\d+\z/
+          params[:ip_address] = target
+        end
+        ap client.create_whitelist_entry(params)
       else
         raise 'bad usage'
       end

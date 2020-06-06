@@ -3,6 +3,8 @@ require 'faraday/detailed_logger'
 require 'faraday/digestauth'
 require 'oj'
 
+Oj.default_options = {mode: :compat}
+
 module MongoCloud
   class Client
 
@@ -37,6 +39,31 @@ module MongoCloud
 
     def get_cluster(project_id:, name:)
       request_json(:get, "groups/#{project_id}/clusters/#{name}")
+    end
+
+    # IP whitelists
+
+    def list_whitelist_entries(project_id:)
+      # TODO paginate
+      request_json(:get, "groups/#{project_id}/whitelist")['results']
+    end
+
+    def get_whitelist_entry(project_id:, name:)
+      request_json(:get, "groups/#{project_id}/whitelist/#{name}")
+    end
+
+    def create_whitelist_entry(project_id:,
+      cidr_block: nil, ip_address: nil, aws_security_group_id: nil,
+      comment: nil, delete_after: nil
+    )
+      payload = {
+        cidrBlock: cidr_block,
+        ipAddress: ip_address,
+        awsSecurityGroup: aws_security_group_id,
+        comment: comment,
+        deleteAfterDate: delete_after&.utc&.strftime('%Y-Ym-%dT%H:%M:%SZ'),
+      }.compact
+      request_json(:post, "groups/#{project_id}/whitelist", [payload])
     end
 
     # ---
