@@ -66,6 +66,28 @@ module MongoCloud
       request_json(:post, "groups/#{project_id}/whitelist", [payload])
     end
 
+    # Database Users
+
+    def list_db_users(project_id:)
+      # TODO paginate
+      request_json(:get, "groups/#{project_id}/databaseUsers")['results']
+    end
+
+    def create_db_user(project_id:,
+      username:, password:
+    )
+      payload = {
+        username: username,
+        password: password,
+        databaseName: 'admin',
+        roles: [
+          roleName: 'atlasAdmin',
+          databaseName: 'admin',
+        ],
+      }.compact
+      request_json(:post, "groups/#{project_id}/databaseUsers", payload)
+    end
+
     # ---
 
     def request_json(meth, url, params=nil, options={})

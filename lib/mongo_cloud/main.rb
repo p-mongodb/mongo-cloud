@@ -23,7 +23,7 @@ module MongoCloud
         usage('no command given')
       end
 
-      commands = %w(org proj cluster whitelist)
+      commands = %w(org proj cluster whitelist dbuser)
       if commands.include?(command)
         send(command, argv)
       else
@@ -118,7 +118,38 @@ module MongoCloud
         if target =~ /\A\d+\.\d+\.\d+\.\d+\z/
           params[:ip_address] = target
         end
-        ap client.create_whitelist_entry(params)
+        ap client.create_whitelist_entry(**params)
+      else
+        raise 'bad usage'
+      end
+    end
+
+    def dbuser(argv)
+      options = {
+        project_id: global_options.delete(:project_id),
+      }
+      parser = OptionParser.new do |opts|
+        configure_global_options(opts)
+
+        opts.on('-p', '--project=PROJECT', String, 'Project ID') do |v|
+          options[:project_id] = v
+        end
+      end.parse!(argv)
+
+      client = Client.new(**global_options)
+
+      case argv.shift
+      when 'list'
+        ap client.list_db_users(project_id: options[:project_id])
+      when 'show'
+        ap client.show_whitelist_entry(project_id: options[:project_id], name: argv.shift)
+      when 'create'
+        params = {
+          project_id: options[:project_id],
+          username: argv.shift,
+          password: argv.shift,
+        }
+        ap client.create_db_user(**params)
       else
         raise 'bad usage'
       end
@@ -132,6 +163,9 @@ module MongoCloud
       end
       opts.on('-P', '--password=PASSWORD', String, 'API password (aka private key)') do |v|
         global_options[:password] = v
+      end
+      opts.on('-p', '--project=PASSWORD', String, 'Project ID') do |v|
+        global_options[:project_id] = v
       end
     end
 
