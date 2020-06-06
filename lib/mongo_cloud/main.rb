@@ -45,6 +45,8 @@ module MongoCloud
       case argv.shift
       when 'list'
         p client.list_orgs
+      when 'show'
+        p client.get_org(argv.shift)
       else
         raise 'bad usage'
       end

@@ -10,6 +10,10 @@ module MongoCloud
       request_json(:get, 'orgs')['results']
     end
 
+    def get_org(org_id)
+      request_json(:get, "orgs/#{org_id}")
+    end
+
     def request_json(meth, url, params=nil, options={})
       response = connection.send(meth) do |req|
         if meth.to_s.downcase == 'get'
