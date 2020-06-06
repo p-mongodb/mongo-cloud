@@ -1,3 +1,4 @@
+require 'awesome_print'
 require 'optparse'
 require 'mongo_cloud'
 
@@ -44,9 +45,27 @@ module MongoCloud
 
       case argv.shift
       when 'list'
-        p client.list_orgs
+        ap client.list_orgs
       when 'show'
-        p client.get_org(argv.shift)
+        ap client.get_org(argv.shift)
+      else
+        raise 'bad usage'
+      end
+    end
+
+    def proj(argv)
+      options = {}
+      parser = OptionParser.new do |opts|
+        configure_global_options(opts)
+      end.order!(argv)
+
+      client = Client.new(**global_options.merge(options))
+
+      case argv.shift
+      when 'list'
+        ap client.list_projects
+      when 'show'
+        ap client.get_project(argv.shift)
       else
         raise 'bad usage'
       end

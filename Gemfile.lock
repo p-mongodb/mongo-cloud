@@ -10,6 +10,7 @@ GIT
 GEM
   remote: https://rubygems.org/
   specs:
+    awesome_print (1.8.0)
     byebug (11.1.3)
     faraday (1.0.1)
       multipart-post (>= 1.2, < 3)
@@ -23,6 +24,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  awesome_print
   byebug
   faraday
   faraday-detailed_logger

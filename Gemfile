@@ -5,3 +5,4 @@ gem 'faraday-digestauth', git: 'https://github.com/p-mongo/faraday-digestauth', 
 gem 'byebug'
 gem 'faraday-detailed_logger'
 gem 'oj'
+gem 'awesome_print'

@@ -5,6 +5,9 @@ require 'oj'
 
 module MongoCloud
   class Client
+
+    # Organizations
+
     def list_orgs
       # TODO paginate
       request_json(:get, 'orgs')['results']
@@ -13,6 +16,19 @@ module MongoCloud
     def get_org(org_id)
       request_json(:get, "orgs/#{org_id}")
     end
+
+    # Projects
+
+    def list_projects
+      # TODO paginate
+      request_json(:get, 'groups')['results']
+    end
+
+    def get_project(project_id)
+      request_json(:get, "groups/#{project_id}")
+    end
+
+    # ---
 
     def request_json(meth, url, params=nil, options={})
       response = connection.send(meth) do |req|
