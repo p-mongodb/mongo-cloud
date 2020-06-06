@@ -23,7 +23,7 @@ module MongoCloud
         usage('no command given')
       end
 
-      commands = %w(org proj)
+      commands = %w(org proj cluster)
       if commands.include?(command)
         send(command, argv)
       else
@@ -41,7 +41,7 @@ module MongoCloud
         configure_global_options(opts)
       end.order!(argv)
 
-      client = Client.new(**global_options.merge(options))
+      client = Client.new(**global_options)
 
       case argv.shift
       when 'list'
@@ -59,13 +59,35 @@ module MongoCloud
         configure_global_options(opts)
       end.order!(argv)
 
-      client = Client.new(**global_options.merge(options))
+      client = Client.new(**global_options)
 
       case argv.shift
       when 'list'
         ap client.list_projects
       when 'show'
         ap client.get_project(argv.shift)
+      else
+        raise 'bad usage'
+      end
+    end
+
+    def cluster(argv)
+      options = {}
+      parser = OptionParser.new do |opts|
+        configure_global_options(opts)
+
+        opts.on('-p', '--project=PROJECT', String, 'Project ID') do |v|
+          options[:project_id] = v
+        end
+      end.parse!(argv)
+
+      client = Client.new(**global_options)
+
+      case argv.shift
+      when 'list'
+        ap client.list_clusters(project_id: options[:project_id])
+      when 'show'
+        ap client.get_cluster(project_id: options[:project_id], name: argv.shift)
       else
         raise 'bad usage'
       end

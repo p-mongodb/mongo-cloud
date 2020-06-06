@@ -13,8 +13,8 @@ module MongoCloud
       request_json(:get, 'orgs')['results']
     end
 
-    def get_org(org_id)
-      request_json(:get, "orgs/#{org_id}")
+    def get_org(id)
+      request_json(:get, "orgs/#{id}")
     end
 
     # Projects
@@ -24,8 +24,19 @@ module MongoCloud
       request_json(:get, 'groups')['results']
     end
 
-    def get_project(project_id)
-      request_json(:get, "groups/#{project_id}")
+    def get_project(id)
+      request_json(:get, "groups/#{id}")
+    end
+
+    # Clusters
+
+    def list_clusters(project_id:)
+      # TODO paginate
+      request_json(:get, "groups/#{project_id}/clusters")['results']
+    end
+
+    def get_cluster(project_id:, name:)
+      request_json(:get, "groups/#{project_id}/clusters/#{name}")
     end
 
     # ---
