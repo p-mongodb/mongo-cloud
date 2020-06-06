@@ -72,7 +72,9 @@ module MongoCloud
     end
 
     def cluster(argv)
-      options = {}
+      options = {
+        project_id: global_options.delete(:project_id),
+      }
       parser = OptionParser.new do |opts|
         configure_global_options(opts)
 
@@ -94,7 +96,9 @@ module MongoCloud
     end
 
     def whitelist(argv)
-      options = {}
+      options = {
+        project_id: global_options.delete(:project_id),
+      }
       parser = OptionParser.new do |opts|
         configure_global_options(opts)
 
