@@ -41,7 +41,7 @@ module MongoCloud
         configure_global_options(opts)
       end.order!(argv)
 
-      client = Client.new(**global_options)
+      client = Client.new(**global_options.slice(%i(user password)))
 
       case argv.shift
       when 'list'
@@ -59,7 +59,7 @@ module MongoCloud
         configure_global_options(opts)
       end.order!(argv)
 
-      client = Client.new(**global_options)
+      client = Client.new(**global_options.slice(%i(user password)))
 
       case argv.shift
       when 'list'
@@ -81,7 +81,7 @@ module MongoCloud
         end
       end.parse!(argv)
 
-      client = Client.new(**global_options)
+      client = Client.new(**global_options.slice(%i(user password)))
 
       case argv.shift
       when 'list'
@@ -103,7 +103,7 @@ module MongoCloud
         end
       end.parse!(argv)
 
-      client = Client.new(**global_options)
+      client = Client.new(**global_options.slice(%i(user password)))
 
       case argv.shift
       when 'list'
@@ -136,7 +136,7 @@ module MongoCloud
         end
       end.parse!(argv)
 
-      client = Client.new(**global_options)
+      client = Client.new(**global_options.slice(%i(user password)))
 
       case argv.shift
       when 'list'
