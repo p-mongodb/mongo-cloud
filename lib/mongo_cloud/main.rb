@@ -23,7 +23,7 @@ module MongoCloud
         usage('no command given')
       end
 
-      commands = %w(org proj cluster whitelist dbuser)
+      commands = %w(org proj cluster whitelist dbuser proc)
       if commands.include?(command)
         send(command, argv)
       else
@@ -154,6 +154,28 @@ module MongoCloud
           password: argv.shift,
         }
         ap client.create_db_user(**params)
+      else
+        raise 'bad usage'
+      end
+    end
+
+    def proc(argv)
+      options = {
+        project_id: global_options.delete(:project_id),
+      }
+      parser = OptionParser.new do |opts|
+        configure_global_options(opts)
+
+        opts.on('-p', '--project=PROJECT', String, 'Project ID') do |v|
+          options[:project_id] = v
+        end
+      end.parse!(argv)
+
+      client = Client.new(**global_options.slice(%i(user password)))
+
+      case argv.shift
+      when 'list'
+        ap client.list_processes(project_id: options[:project_id])
       else
         raise 'bad usage'
       end

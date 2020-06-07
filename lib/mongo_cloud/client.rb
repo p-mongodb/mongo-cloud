@@ -88,6 +88,13 @@ module MongoCloud
       request_json(:post, "groups/#{project_id}/databaseUsers", payload)
     end
 
+    # Processes
+
+    def list_processes(project_id:)
+      # TODO paginate
+      request_json(:get, "groups/#{project_id}/processes")['results']
+    end
+
     # ---
 
     def request_json(meth, url, params=nil, options={})
