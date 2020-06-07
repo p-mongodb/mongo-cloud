@@ -1,3 +1,4 @@
+require 'rack'
 require 'faraday'
 require 'faraday/detailed_logger'
 require 'faraday/digestauth'
@@ -61,7 +62,7 @@ module MongoCloud
         ipAddress: ip_address,
         awsSecurityGroup: aws_security_group_id,
         comment: comment,
-        deleteAfterDate: delete_after&.utc&.strftime('%Y-Ym-%dT%H:%M:%SZ'),
+        deleteAfterDate: to_iso8601_time(delete_after),
       }.compact
       request_json(:post, "groups/#{project_id}/whitelist", [payload])
     end
@@ -93,6 +94,21 @@ module MongoCloud
     def list_processes(project_id:)
       # TODO paginate
       request_json(:get, "groups/#{project_id}/processes")['results']
+    end
+
+    def get_process_measurements(project_id:, process_id:,
+      granularity:, period: nil, start_time: nil, end_time: nil,
+      metrics: nil
+    )
+      payload = {
+        granularity: granularity,
+        period: period,
+        start: to_iso8601_time(start_time),
+        end: to_iso8601_time(end_time),
+        # TODO serialize as repeated key
+        m: metrics,
+      }.compact
+      request_json(:get, "groups/#{project_id}/processes/#{process_id}/measurements", payload)
     end
 
     # ---
@@ -152,6 +168,17 @@ module MongoCloud
         f.response :detailed_logger
         f.adapter Faraday.default_adapter
         f.headers['user-agent'] = 'MongoCloudClient'
+      end
+    end
+
+    def to_iso8601_time(time_or_str)
+      case time_or_str
+      when nil
+        nil
+      when String
+        time_or_str
+      else
+        time_or_str.utc&.strftime('%Y-Ym-%dT%H:%M:%SZ')
       end
     end
   end

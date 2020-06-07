@@ -169,6 +169,12 @@ module MongoCloud
         opts.on('-p', '--project=PROJECT', String, 'Project ID') do |v|
           options[:project_id] = v
         end
+        opts.on('--granularity=GRANULARITY', String, 'Measurements granularity') do |v|
+          options[:granularity] = v.upcase
+        end
+        opts.on('--period=PERIOD', String, 'Measurements period') do |v|
+          options[:period] = v.upcase
+        end
       end.parse!(argv)
 
       client = Client.new(**global_options.slice(%i(user password)))
@@ -176,6 +182,10 @@ module MongoCloud
       case argv.shift
       when 'list'
         ap client.list_processes(project_id: options[:project_id])
+      when 'measurements'
+        ap client.get_process_measurements(project_id: options[:project_id],
+          granularity: options[:granularity], period: options[:period],
+          process_id: argv.shift)
       else
         raise 'bad usage'
       end

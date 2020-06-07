@@ -19,6 +19,7 @@ GEM
     multipart-post (2.1.1)
     net-http-digest_auth (1.4.1)
     oj (3.10.6)
+    rack (2.2.2)
 
 PLATFORMS
   ruby
@@ -30,6 +31,7 @@ DEPENDENCIES
   faraday-detailed_logger
   faraday-digestauth!
   oj
+  rack
 
 BUNDLED WITH
    2.1.4
