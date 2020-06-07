@@ -90,6 +90,9 @@ module MongoCloud
         ap client.list_clusters(project_id: options[:project_id])
       when 'show'
         ap client.get_cluster(project_id: options[:project_id], name: argv.shift)
+      when 'log'
+        puts client.get_cluster_log(project_id: options[:project_id],
+          hostname: argv.shift, name: argv.shift&.to_sym || :mongod, decompress: true)
       else
         raise 'bad usage'
       end

@@ -1,3 +1,4 @@
+autoload :Zlib, 'zlib'
 require 'rack'
 require 'faraday'
 require 'faraday/detailed_logger'
@@ -111,9 +112,40 @@ module MongoCloud
       request_json(:get, "groups/#{project_id}/processes/#{process_id}/measurements", payload)
     end
 
+    def get_cluster_log(project_id:, hostname:,
+      name:, start_time: nil, end_time: nil,
+      decompress: false
+    )
+      if name.is_a?(Symbol)
+        name = {
+          mongod: 'mongodb.gz',
+          mongos: 'mongos.gz',
+          mongod_audit: 'mongodb-audit-log.gz',
+          mongos_audit: 'mongos-audit-log.gz',
+        }.fetch(name)
+      end
+
+      payload = {
+        start: start_time,
+        end: end_time,
+      }.compact
+      resp = request(:get, "groups/#{project_id}/clusters/#{hostname}/logs/#{name}", payload)
+      body = resp.body
+      if decompress
+        gz = Zlib::GzipReader.new(StringIO.new(resp.body))
+        body = gz.read
+      end
+      body
+    end
+
     # ---
 
-    def request_json(meth, url, params=nil, options={})
+    def request_json(meth, url, params=nil, **options)
+      response = request(meth, url, params, **options)
+      Oj.load(response.body)
+    end
+
+    def request(meth, url, params=nil, **options)
       response = connection.send(meth) do |req|
         if meth.to_s.downcase == 'get'
           if params
@@ -155,7 +187,7 @@ module MongoCloud
         end
         raise cls.new(msg, status: response.status)
       end
-      Oj.load(response.body)
+      response
     end
 
     def connection
