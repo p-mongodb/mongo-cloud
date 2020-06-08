@@ -9,7 +9,7 @@ It was started to address the following goals:
 
 - Support for actions that mongocli did not implement (such as Atlas
 organization management).
-- Flatter, easier to use command line argument/option structure.
+- Easier to use command line argument/option structure.
 - A Ruby API client consumable by other libraries/programs.
 
 ## License
