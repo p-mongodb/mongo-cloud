@@ -1,9 +1,9 @@
 GIT
   remote: https://github.com/p-mongo/faraday-digestauth
-  revision: ab4d0698a38b47ca064f7b2b578251f5c73383c8
-  branch: speedup-auth-fix
+  revision: 74021185e4bbdf07fe7c6c528264c0fe5b87c688
+  branch: mine
   specs:
-    faraday-digestauth (0.3.0)
+    faraday-digestauth (0.4.1)
       faraday (>= 0.7)
       net-http-digest_auth (~> 1.4)
 
@@ -18,8 +18,8 @@ GEM
       faraday (>= 0.8, < 2)
     multipart-post (2.1.1)
     net-http-digest_auth (1.4.1)
-    oj (3.10.6)
-    rack (2.2.2)
+    oj (3.10.14)
+    rack (2.2.3)
 
 PLATFORMS
   ruby
