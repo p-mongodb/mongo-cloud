@@ -54,6 +54,10 @@ module MongoCloud
       request_json(:get, "groups/byName/#{URI.escape(name)}")
     end
 
+    def delete_project(id)
+      request_json(:delete, "groups/#{URI.escape(id)}")
+    end
+
     # Clusters
 
     def list_clusters(project_id:)
@@ -63,6 +67,10 @@ module MongoCloud
 
     def get_cluster(project_id:, name:)
       request_json(:get, "groups/#{project_id}/clusters/#{name}")
+    end
+
+    def delete_cluster(project_id:, name:)
+      request_json(:delete, "groups/#{URI.escape(project_id)}/clusters/#{URI.escape(name)}")
     end
 
     # IP whitelists
@@ -191,7 +199,7 @@ module MongoCloud
           req.headers['content-type'] = 'application/json'
         end
       end
-      if response.status != 200 && response.status != 201
+      unless (200..202).include?(response.status)
         error = nil
         begin
           error = Oj.load(response.body)['error']
