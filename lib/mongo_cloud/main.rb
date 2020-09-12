@@ -23,7 +23,7 @@ module MongoCloud
         usage('no command given')
       end
 
-      commands = %w(org proj cluster whitelist dbuser proc)
+      commands = %w(org project cluster whitelist dbuser proc)
       if commands.include?(command)
         send(command, argv)
       else
@@ -53,7 +53,7 @@ module MongoCloud
       end
     end
 
-    def proj(argv)
+    def project(argv)
       options = {}
       parser = OptionParser.new do |opts|
         configure_global_options(opts)
