@@ -36,7 +36,7 @@ module MongoCloud
     end
 
     def get_org(id)
-      request_json(:get, "orgs/#{id}")
+      request_json(:get, "orgs/#{URI.escape(id)}")
     end
 
     # Projects
@@ -47,7 +47,11 @@ module MongoCloud
     end
 
     def get_project(id)
-      request_json(:get, "groups/#{id}")
+      request_json(:get, "groups/#{URI.escape(id)}")
+    end
+
+    def get_project_by_name(name)
+      request_json(:get, "groups/byName/#{URI.escape(name)}")
     end
 
     # Clusters

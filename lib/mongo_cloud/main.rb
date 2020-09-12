@@ -85,6 +85,13 @@ module MongoCloud
 
       client = Client.new(**global_options.slice(*%i(user password)))
 
+      begin
+        client.get_project(options[:project_id])
+      rescue Client::NotFound
+        info = client.get_project_by_name(options[:project_id])
+        options[:project_id] = info['id']
+      end
+
       case argv.shift
       when 'list'
         ap client.list_clusters(project_id: options[:project_id])
