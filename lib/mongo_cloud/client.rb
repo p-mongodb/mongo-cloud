@@ -11,12 +11,25 @@ module MongoCloud
   class Client
 
     class ApiError < StandardError
-      def initialize(msg, status: nil)
+      def initialize(msg, status: nil, body: nil)
         @msg = msg
         @status = status
+        @body = body
       end
 
       attr_reader :status
+      attr_reader :body
+
+      def payload
+        @payload ||= Oj.load(body)
+      end
+
+      def error_code
+        payload['errorCode']
+      end
+    end
+
+    class BadRequest < ApiError
     end
 
     class NotFound < ApiError
@@ -71,6 +84,12 @@ module MongoCloud
 
     def delete_cluster(project_id:, name:)
       request_json(:delete, "groups/#{URI.escape(project_id)}/clusters/#{URI.escape(name)}")
+    rescue BadRequest => exc
+      if exc.error_code == 'CLUSTER_ALREADY_REQUESTED_DELETION'
+        # Silence
+      else
+        raise
+      end
     end
 
     # IP whitelists
@@ -210,12 +229,15 @@ module MongoCloud
         if error
           msg += ": #{error}"
         end
-        cls = if response.status == 404
+        cls = case response.status
+        when 400
+          BadRequest
+        when 404
           NotFound
         else
           ApiError
         end
-        raise cls.new(msg, status: response.status)
+        raise cls.new(msg, status: response.status, body: response.body)
       end
       response
     end
