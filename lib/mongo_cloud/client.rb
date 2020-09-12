@@ -10,6 +10,12 @@ Oj.default_options = {mode: :compat}
 module MongoCloud
   class Client
 
+    def initialize(**opts)
+      @options = opts.freeze
+    end
+
+    attr_reader :options
+
     # Organizations
 
     def list_orgs
@@ -192,8 +198,8 @@ module MongoCloud
 
     def connection
       @connection ||= Faraday.new("https://cloud.mongodb.com/api/atlas/v1.0/") do |f|
-        username = ENV['MCLI_PUBLIC_API_KEY']
-        password = ENV['MCLI_PRIVATE_API_KEY']
+        username = options[:user] || ENV['MCLI_PUBLIC_API_KEY']
+        password = options[:password] || ENV['MCLI_PRIVATE_API_KEY']
 
         f.request :url_encoded
         f.request :digest, username, password
