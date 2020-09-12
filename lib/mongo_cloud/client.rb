@@ -10,6 +10,18 @@ Oj.default_options = {mode: :compat}
 module MongoCloud
   class Client
 
+    class ApiError < StandardError
+      def initialize(msg, status: nil)
+        @msg = msg
+        @status = status
+      end
+
+      attr_reader :status
+    end
+
+    class NotFound < ApiError
+    end
+
     def initialize(**opts)
       @options = opts.freeze
     end
