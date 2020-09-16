@@ -94,12 +94,12 @@ module MongoCloud
 
     def create_cluster(project_id:, name:, **opts)
       request_json(:post, "groups/#{URI.escape(project_id)}/clusters",
-        opts)
+        {name: name}.update(opts), {})
     end
 
     def update_cluster(project_id:, name:, **opts)
       request_json(:patch, "groups/#{URI.escape(project_id)}/clusters/#{URI.escape(name)}",
-        {name: name}.update(opts), {})
+        opts)
     end
 
     # IP whitelists
