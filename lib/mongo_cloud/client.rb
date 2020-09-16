@@ -75,11 +75,11 @@ module MongoCloud
 
     def list_clusters(project_id:)
       # TODO paginate
-      request_json(:get, "groups/#{project_id}/clusters")['results']
+      request_json(:get, "groups/#{URI.escape(project_id)}/clusters")['results']
     end
 
     def get_cluster(project_id:, name:)
-      request_json(:get, "groups/#{project_id}/clusters/#{URI.escape(name)}")
+      request_json(:get, "groups/#{URI.escape(project_id)}/clusters/#{URI.escape(name)}")
     end
 
     def delete_cluster(project_id:, name:)
@@ -106,11 +106,11 @@ module MongoCloud
 
     def list_whitelist_entries(project_id:)
       # TODO paginate
-      request_json(:get, "groups/#{project_id}/whitelist")['results']
+      request_json(:get, "groups/#{URI.escape(project_id)}/whitelist")['results']
     end
 
     def get_whitelist_entry(project_id:, name:)
-      request_json(:get, "groups/#{project_id}/whitelist/#{name}")
+      request_json(:get, "groups/#{URI.escape(project_id)}/whitelist/#{URI.escape(name)}")
     end
 
     def create_whitelist_entry(project_id:,
@@ -124,14 +124,14 @@ module MongoCloud
         comment: comment,
         deleteAfterDate: to_iso8601_time(delete_after),
       }.compact
-      request_json(:post, "groups/#{project_id}/whitelist", [payload])
+      request_json(:post, "groups/#{URI.escape(project_id)}/whitelist", [payload])
     end
 
     # Database Users
 
     def list_db_users(project_id:)
       # TODO paginate
-      request_json(:get, "groups/#{project_id}/databaseUsers")['results']
+      request_json(:get, "groups/#{URI.escape(project_id)}/databaseUsers")['results']
     end
 
     def create_db_user(project_id:,
@@ -146,14 +146,14 @@ module MongoCloud
           databaseName: 'admin',
         ],
       }.compact
-      request_json(:post, "groups/#{project_id}/databaseUsers", payload)
+      request_json(:post, "groups/#{URI.escape(project_id)}/databaseUsers", payload)
     end
 
     # Processes
 
     def list_processes(project_id:)
       # TODO paginate
-      request_json(:get, "groups/#{project_id}/processes")['results']
+      request_json(:get, "groups/#{URI.escape(project_id)}/processes")['results']
     end
 
     def get_process_measurements(project_id:, process_id:,
@@ -168,7 +168,7 @@ module MongoCloud
         # TODO serialize as repeated key
         m: metrics,
       }.compact
-      request_json(:get, "groups/#{project_id}/processes/#{process_id}/measurements", payload)
+      request_json(:get, "groups/#{URI.escape(project_id)}/processes/#{URI.escape(process_id)}/measurements", payload)
     end
 
     def get_cluster_log(project_id:, hostname:,
@@ -188,7 +188,7 @@ module MongoCloud
         start: start_time,
         end: end_time,
       }.compact
-      resp = request(:get, "groups/#{project_id}/clusters/#{hostname}/logs/#{name}", payload)
+      resp = request(:get, "groups/#{URI.escape(project_id)}/clusters/#{URI.escape(hostname)}/logs/#{URI.escape(name)}", payload)
       body = resp.body
       if decompress
         gz = Zlib::GzipReader.new(StringIO.new(resp.body))
