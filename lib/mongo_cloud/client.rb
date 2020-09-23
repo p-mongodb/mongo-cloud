@@ -56,7 +56,7 @@ module MongoCloud
 
     def list_projects
       # TODO paginate
-      request_json(:get, 'groups')['results']
+      convert_keys_array(request_json(:get, 'groups')['results'])
     end
 
     def get_project(id)
@@ -278,6 +278,28 @@ module MongoCloud
 
     def escape(str)
       CGI.escape(str).gsub('+', '%20')
+    end
+
+    def convert_keys(data)
+      data = data.dup
+      data.delete('links')
+      data.keys.each do |key|
+        underscore_key = key.gsub(/(?<=[a-z])([A-Z])/) { |m| '_' + m.downcase }
+        if key != underscore_key
+          data[underscore_key] = data.delete(key)
+        end
+      end
+      out = {}
+      data.keys.sort.each do |key|
+        out[key] = data[key]
+      end
+      out
+    end
+
+    def convert_keys_array(data)
+      data.map do |item|
+        convert_keys(item)
+      end
     end
   end
 end
