@@ -68,7 +68,14 @@ module MongoCloud
 
       case argv.shift
       when 'list'
-        ap client.list_projects
+        infos = client.list_projects
+        infos.each do |info|
+          cache['project-id2name'] ||= {}
+          cache['project-id2name'][info['id']] = info['name']
+          cache['project-name2id'] ||= {}
+          cache['project-name2id'][info['name']] = info['id']
+        end
+        ap infos
       when 'show'
         ap client.get_project(argv.shift)
       else
