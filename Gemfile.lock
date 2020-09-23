@@ -12,6 +12,7 @@ GEM
   specs:
     awesome_print (1.8.0)
     byebug (11.1.3)
+    daybreak (0.3.0)
     faraday (1.0.1)
       multipart-post (>= 1.2, < 3)
     faraday-detailed_logger (2.3.0)
@@ -27,6 +28,7 @@ PLATFORMS
 DEPENDENCIES
   awesome_print
   byebug
+  daybreak
   faraday
   faraday-detailed_logger
   faraday-digestauth!

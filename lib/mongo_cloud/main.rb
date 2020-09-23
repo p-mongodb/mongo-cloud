@@ -1,4 +1,5 @@
 require 'awesome_print'
+require 'daybreak'
 require 'optparse'
 require 'mongo_cloud'
 
@@ -6,9 +7,11 @@ module MongoCloud
   class Main
     def initialize
       @global_options = {}
+      @cache = Daybreak::DB.new(File.expand_path('~/.mongo-cloud.cache'))
     end
 
     attr_reader :global_options
+    attr_reader :cache
 
     def run(argv = ARGV)
       argv = argv.dup
@@ -29,6 +32,8 @@ module MongoCloud
       else
         usage("unknown command: #{command}")
       end
+    ensure
+      cache.close
     end
 
     def usage(msg)
