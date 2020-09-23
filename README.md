@@ -12,6 +12,39 @@ organization management).
 - Easier to use command line argument/option structure.
 - A Ruby API client consumable by other libraries/programs.
 
+## Usage
+
+Credentials can be given as top-level command-line options:
+
+    cloud -u $USERNAME -p $PASSWORD ...
+
+Organization:
+
+    cloud org list
+    cloud org show 1234cafe...
+
+Projects:
+
+    cloud project list
+    cloud project show 1234cafe...
+
+IP whitelists:
+
+    cloud whitelist -p 1234cafe... list
+    cloud whitelist -p 1234cafe... show 0.0.0.0/0
+    cloud whitelist -p 1234cafe... add 0.0.0.0
+
+Database users:
+
+    cloud dbuser -p 1234cafe... list
+    cloud dbuser -p 1234cafe... show UserName
+    cloud dbuser -p 1234cafe... create UserName Password
+
+Deployments:
+
+    cloud cluster -p 1234cafe... list
+    cloud cluster -p 1234cafe... show ClusterName
+
 ## License
 
 MIT

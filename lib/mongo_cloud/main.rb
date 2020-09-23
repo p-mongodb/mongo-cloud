@@ -123,7 +123,7 @@ module MongoCloud
       when 'list'
         ap client.list_whitelist_entries(project_id: options[:project_id])
       when 'show'
-        ap client.show_whitelist_entry(project_id: options[:project_id], name: argv.shift)
+        ap client.get_whitelist_entry(project_id: options[:project_id], name: argv.shift)
       when 'add'
         params = {
           project_id: options[:project_id],

@@ -49,7 +49,7 @@ module MongoCloud
     end
 
     def get_org(id)
-      request_json(:get, "orgs/#{URI.escape(id)}")
+      request_json(:get, "orgs/#{escape(id)}")
     end
 
     # Projects
@@ -60,30 +60,30 @@ module MongoCloud
     end
 
     def get_project(id)
-      request_json(:get, "groups/#{URI.escape(id)}")
+      request_json(:get, "groups/#{escape(id)}")
     end
 
     def get_project_by_name(name)
-      request_json(:get, "groups/byName/#{URI.escape(name)}")
+      request_json(:get, "groups/byName/#{escape(name)}")
     end
 
     def delete_project(id)
-      request_json(:delete, "groups/#{URI.escape(id)}")
+      request_json(:delete, "groups/#{escape(id)}")
     end
 
     # Clusters
 
     def list_clusters(project_id:)
       # TODO paginate
-      request_json(:get, "groups/#{URI.escape(project_id)}/clusters")['results']
+      request_json(:get, "groups/#{escape(project_id)}/clusters")['results']
     end
 
     def get_cluster(project_id:, name:)
-      request_json(:get, "groups/#{URI.escape(project_id)}/clusters/#{URI.escape(name)}")
+      request_json(:get, "groups/#{escape(project_id)}/clusters/#{escape(name)}")
     end
 
     def delete_cluster(project_id:, name:)
-      request_json(:delete, "groups/#{URI.escape(project_id)}/clusters/#{URI.escape(name)}")
+      request_json(:delete, "groups/#{escape(project_id)}/clusters/#{escape(name)}")
     rescue BadRequest => exc
       if exc.error_code == 'CLUSTER_ALREADY_REQUESTED_DELETION'
         # Silence
@@ -93,12 +93,12 @@ module MongoCloud
     end
 
     def create_cluster(project_id:, name:, **opts)
-      request_json(:post, "groups/#{URI.escape(project_id)}/clusters",
+      request_json(:post, "groups/#{escape(project_id)}/clusters",
         {name: name}.update(opts), {})
     end
 
     def update_cluster(project_id:, name:, **opts)
-      request_json(:patch, "groups/#{URI.escape(project_id)}/clusters/#{URI.escape(name)}",
+      request_json(:patch, "groups/#{escape(project_id)}/clusters/#{escape(name)}",
         opts)
     end
 
@@ -106,11 +106,11 @@ module MongoCloud
 
     def list_whitelist_entries(project_id:)
       # TODO paginate
-      request_json(:get, "groups/#{URI.escape(project_id)}/whitelist")['results']
+      request_json(:get, "groups/#{escape(project_id)}/whitelist")['results']
     end
 
     def get_whitelist_entry(project_id:, name:)
-      request_json(:get, "groups/#{URI.escape(project_id)}/whitelist/#{URI.escape(name)}")
+      request_json(:get, "groups/#{escape(project_id)}/whitelist/#{escape(name)}")
     end
 
     def create_whitelist_entry(project_id:,
@@ -124,14 +124,14 @@ module MongoCloud
         comment: comment,
         deleteAfterDate: to_iso8601_time(delete_after),
       }.compact
-      request_json(:post, "groups/#{URI.escape(project_id)}/whitelist", [payload])
+      request_json(:post, "groups/#{escape(project_id)}/whitelist", [payload])
     end
 
     # Database Users
 
     def list_db_users(project_id:)
       # TODO paginate
-      request_json(:get, "groups/#{URI.escape(project_id)}/databaseUsers")['results']
+      request_json(:get, "groups/#{escape(project_id)}/databaseUsers")['results']
     end
 
     def create_db_user(project_id:,
@@ -146,14 +146,14 @@ module MongoCloud
           databaseName: 'admin',
         ],
       }.compact
-      request_json(:post, "groups/#{URI.escape(project_id)}/databaseUsers", payload)
+      request_json(:post, "groups/#{escape(project_id)}/databaseUsers", payload)
     end
 
     # Processes
 
     def list_processes(project_id:)
       # TODO paginate
-      request_json(:get, "groups/#{URI.escape(project_id)}/processes")['results']
+      request_json(:get, "groups/#{escape(project_id)}/processes")['results']
     end
 
     def get_process_measurements(project_id:, process_id:,
@@ -168,7 +168,7 @@ module MongoCloud
         # TODO serialize as repeated key
         m: metrics,
       }.compact
-      request_json(:get, "groups/#{URI.escape(project_id)}/processes/#{URI.escape(process_id)}/measurements", payload)
+      request_json(:get, "groups/#{escape(project_id)}/processes/#{escape(process_id)}/measurements", payload)
     end
 
     def get_cluster_log(project_id:, hostname:,
@@ -188,7 +188,7 @@ module MongoCloud
         start: start_time,
         end: end_time,
       }.compact
-      resp = request(:get, "groups/#{URI.escape(project_id)}/clusters/#{URI.escape(hostname)}/logs/#{URI.escape(name)}", payload)
+      resp = request(:get, "groups/#{escape(project_id)}/clusters/#{escape(hostname)}/logs/#{escape(name)}", payload)
       body = resp.body
       if decompress
         gz = Zlib::GzipReader.new(StringIO.new(resp.body))
@@ -274,6 +274,10 @@ module MongoCloud
       else
         time_or_str.utc&.strftime('%Y-Ym-%dT%H:%M:%SZ')
       end
+    end
+
+    def escape(str)
+      CGI.escape(str).gsub('+', '%20')
     end
   end
 end
