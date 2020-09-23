@@ -75,7 +75,7 @@ module MongoCloud
 
     def list_clusters(project_id:)
       # TODO paginate
-      request_json(:get, "groups/#{escape(project_id)}/clusters")['results']
+      convert_keys_array(request_json(:get, "groups/#{escape(project_id)}/clusters")['results'])
     end
 
     def get_cluster(project_id:, name:)
@@ -284,14 +284,21 @@ module MongoCloud
       data = data.dup
       data.delete('links')
       data.keys.each do |key|
-        underscore_key = key.gsub(/(?<=[a-z])([A-Z])/) { |m| '_' + m.downcase }
+        underscore_key = key.sub('mongoDB', 'mongodb').sub('URI', 'Uri').sub('GB', 'Gb').gsub(/(?<=[a-z])([A-Z]+)/) { |m| '_' + m.downcase }
         if key != underscore_key
           data[underscore_key] = data.delete(key)
         end
       end
       out = {}
       data.keys.sort.each do |key|
-        out[key] = data[key]
+        value = data[key]
+        case value
+        when Hash
+          value = convert_keys(value)
+        when Array
+          value = convert_keys_array(value)
+        end
+        out[key] = value
       end
       out
     end
