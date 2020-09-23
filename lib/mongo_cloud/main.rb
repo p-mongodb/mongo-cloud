@@ -69,12 +69,7 @@ module MongoCloud
       case argv.shift
       when 'list'
         infos = client.list_projects
-        infos.each do |info|
-          cache['project-id2name'] ||= {}
-          cache['project-id2name'][info['id']] = info['name']
-          cache['project-name2id'] ||= {}
-          cache['project-name2id'][info['name']] = info['id']
-        end
+        cache_id2name('project', infos)
         ap infos
       when 'show'
         ap client.get_project(argv.shift)
@@ -106,7 +101,9 @@ module MongoCloud
 
       case argv.shift
       when 'list'
-        ap client.list_clusters(project_id: options[:project_id])
+        infos = client.list_clusters(project_id: options[:project_id])
+        cache_id2name('cluster', infos)
+        ap infos
       when 'show'
         ap client.get_cluster(project_id: options[:project_id], name: argv.shift)
       when 'log'
@@ -224,6 +221,23 @@ module MongoCloud
       end
       opts.on('-p', '--project=PASSWORD', String, 'Project ID') do |v|
         global_options[:project_id] = v
+      end
+    end
+
+    def cache_id2name(key, infos)
+      case infos
+      when Array
+        infos.each do |info|
+          cache_id2name(key, info)
+        end
+      when Hash
+        info = infos
+        cache["#{key}:id2name"] ||= {}
+        cache["#{key}:id2name"][info['id']] = info['name']
+        cache["#{key}:name2id"] ||= {}
+        cache["#{key}:name2id"][info['name']] = info['id']
+      else
+        raise "Unexpected type #{infos}"
       end
     end
 
