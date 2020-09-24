@@ -210,7 +210,8 @@ module MongoCloud
         unless project_id
           raise "Project id is required"
         end
-        ap client.list_processes(project_id: project_id)
+        infos = client.list_processes(project_id: project_id)
+        ap infos
       when 'measurements'
         ap client.get_process_measurements(project_id: options[:project_id],
           granularity: options[:granularity], period: options[:period],

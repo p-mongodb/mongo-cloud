@@ -56,7 +56,7 @@ module MongoCloud
 
     def list_projects
       # TODO paginate
-      convert_keys_array(request_json(:get, 'groups')['results'])
+      convert_keys(request_json(:get, 'groups')['results'])
     end
 
     def get_project(id)
@@ -75,7 +75,7 @@ module MongoCloud
 
     def list_clusters(project_id:)
       # TODO paginate
-      convert_keys_array(request_json(:get, "groups/#{escape(project_id)}/clusters")['results'])
+      convert_keys(request_json(:get, "groups/#{escape(project_id)}/clusters")['results'])
     end
 
     def get_cluster(project_id:, name:)
@@ -153,7 +153,7 @@ module MongoCloud
 
     def list_processes(project_id:)
       # TODO paginate
-      request_json(:get, "groups/#{escape(project_id)}/processes")['results']
+      convert_keys(request_json(:get, "groups/#{escape(project_id)}/processes")['results'])
     end
 
     def get_process_measurements(project_id:, process_id:,
@@ -281,10 +281,22 @@ module MongoCloud
     end
 
     def convert_keys(data)
+      if Array === data
+        return data.map do |item|
+          convert_keys(item)
+        end
+      end
+
       data = data.dup
       data.delete('links')
       data.keys.each do |key|
-        underscore_key = key.sub('mongoDB', 'mongodb').sub('URI', 'Uri').sub('GB', 'Gb').gsub(/(?<=[a-z])([A-Z]+)/) { |m| '_' + m.downcase }
+        underscore_key = key.
+          sub('mongoDB', 'mongodb').
+          sub('URI', 'Uri').sub('GB', 'Gb').
+          gsub(/(?<=[a-z])([A-Z]+)/) { |m| '_' + m.downcase }
+        if underscore_key == 'group_id'
+          underscore_key = 'project_id'
+        end
         if key != underscore_key
           data[underscore_key] = data.delete(key)
         end
@@ -296,17 +308,11 @@ module MongoCloud
         when Hash
           value = convert_keys(value)
         when Array
-          value = convert_keys_array(value)
+          value = convert_keys(value)
         end
         out[key] = value
       end
       out
-    end
-
-    def convert_keys_array(data)
-      data.map do |item|
-        convert_keys(item)
-      end
     end
   end
 end
