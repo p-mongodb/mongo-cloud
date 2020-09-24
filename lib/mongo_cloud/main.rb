@@ -5,6 +5,13 @@ require 'mongo_cloud'
 
 module MongoCloud
   class Main
+    LOG_NAME_MAP = {
+      'mongod' => 'mongodb',
+      'mongos' => 'mongos',
+      'mongod-audit' => 'mongodb-audit-log',
+      'mongos-audit' => 'mongos-audit-log',
+    }.freeze
+
     def initialize
       @global_options = {}
       @cache = Daybreak::DB.new(File.expand_path('~/.mongo-cloud.cache'))
@@ -218,6 +225,31 @@ module MongoCloud
         ap client.get_process_measurements(project_id: options[:project_id],
           granularity: options[:granularity], period: options[:period],
           process_id: argv.shift)
+      when 'log'
+        project_id = options[:project_id] || begin
+          if options[:cluster_id]
+            cache["cluster-project"]&.[](options[:cluster_id])
+          end
+        end
+        unless project_id
+          raise "Project id is required"
+        end
+        host_id = argv.shift
+        hostname = cache['proc:id:hostname'].fetch(host_id, host_id)
+        unless hostname
+          raise "Hostname is required"
+        end
+        log_name = argv.shift
+        if LOG_NAME_MAP.key?(log_name)
+          log_name = LOG_NAME_MAP[log_name]
+        end
+        unless log_name.end_with?('.gz')
+          log_name += '.gz'
+        end
+        log = client.get_process_log(project_id: project_id,
+          hostname: hostname, name: log_name, decompress: true,
+          start_time: 0)
+        puts log
       else
         raise 'bad usage'
       end

@@ -171,7 +171,7 @@ module MongoCloud
       request_json(:get, "groups/#{escape(project_id)}/processes/#{escape(process_id)}/measurements", payload)
     end
 
-    def get_cluster_log(project_id:, hostname:,
+    def get_process_log(project_id:, hostname:,
       name:, start_time: nil, end_time: nil,
       decompress: false
     )
@@ -184,11 +184,18 @@ module MongoCloud
         }.fetch(name)
       end
 
+      if Time === start_time
+        start_time = start_time.to_i
+      end
+      if Time === end_time
+        end_time = end_time.to_i
+      end
+
       payload = {
-        start: start_time,
-        end: end_time,
+        startDate: start_time,
+        endDate: end_time,
       }.compact
-      resp = request(:get, "groups/#{escape(project_id)}/clusters/#{escape(hostname)}/logs/#{escape(name)}", payload)
+      resp = request(:get, "groups/#{escape(project_id)}/clusters/#{escape(hostname)}/logs/#{escape(name)}", payload, **{})
       body = resp.body
       if decompress
         gz = Zlib::GzipReader.new(StringIO.new(resp.body))
