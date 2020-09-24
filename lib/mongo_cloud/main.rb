@@ -103,6 +103,7 @@ module MongoCloud
       when 'list'
         infos = client.list_clusters(project_id: options[:project_id])
         cache_id2name('cluster', infos)
+        cache_association('cluster', 'project', infos, 'group_id')
         ap infos
       when 'show'
         ap client.get_cluster(project_id: options[:project_id], name: argv.shift)
@@ -200,7 +201,11 @@ module MongoCloud
 
       case argv.shift
       when 'list'
-        ap client.list_processes(project_id: options[:project_id])
+        project_id = options[:project_id] || begin
+          if options[:cluster_id]
+          end
+        end
+        ap client.list_processes(project_id: project_id)
       when 'measurements'
         ap client.get_process_measurements(project_id: options[:project_id],
           granularity: options[:granularity], period: options[:period],
@@ -219,8 +224,11 @@ module MongoCloud
       opts.on('-P', '--password=PASSWORD', String, 'API password (aka private key)') do |v|
         global_options[:password] = v
       end
-      opts.on('-p', '--project=PASSWORD', String, 'Project ID') do |v|
+      opts.on('-p', '--project=PROJECT', String, 'Project ID') do |v|
         global_options[:project_id] = v
+      end
+      opts.on('-c', '--cluster=CLUSTER', String, 'Cluster ID') do |v|
+        global_options[:cluster_id] = v
       end
     end
 
@@ -236,6 +244,21 @@ module MongoCloud
         cache["#{key}:id2name"][info['id']] = info['name']
         cache["#{key}:name2id"] ||= {}
         cache["#{key}:name2id"][info['name']] = info['id']
+      else
+        raise "Unexpected type #{infos}"
+      end
+    end
+
+    def cache_association(child_key, parent_key, infos, foreign_key)
+      case infos
+      when Array
+        infos.each do |info|
+          cache_association(child_key, parent_key, info, foreign_key)
+        end
+      when Hash
+        info = infos
+        cache["#{child_key}-#{parent_key}"] ||= {}
+        cache["#{child_key}-#{parent_key}"][info['id']] = info[foreign_key]
       else
         raise "Unexpected type #{infos}"
       end
