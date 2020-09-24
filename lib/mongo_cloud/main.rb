@@ -8,6 +8,7 @@ module MongoCloud
     def initialize
       @global_options = {}
       @cache = Daybreak::DB.new(File.expand_path('~/.mongo-cloud.cache'))
+      # TODO record & check version of cache, remove caches of older versions
     end
 
     attr_reader :global_options
