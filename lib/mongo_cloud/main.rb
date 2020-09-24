@@ -182,6 +182,7 @@ module MongoCloud
     def proc(argv)
       options = {
         project_id: global_options.delete(:project_id),
+        cluster_id: global_options.delete(:cluster_id),
       }
       parser = OptionParser.new do |opts|
         configure_global_options(opts)
@@ -203,7 +204,11 @@ module MongoCloud
       when 'list'
         project_id = options[:project_id] || begin
           if options[:cluster_id]
+            cache["cluster-project"]&.[](options[:cluster_id])
           end
+        end
+        unless project_id
+          raise "Project id is required"
         end
         ap client.list_processes(project_id: project_id)
       when 'measurements'
