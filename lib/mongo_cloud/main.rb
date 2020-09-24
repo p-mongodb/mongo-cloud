@@ -69,7 +69,7 @@ module MongoCloud
       case argv.shift
       when 'list'
         infos = client.list_projects
-        cache_id2name('project', infos)
+        cache_id('project', infos, 'name')
         ap infos
       when 'show'
         ap client.get_project(argv.shift)
@@ -102,7 +102,7 @@ module MongoCloud
       case argv.shift
       when 'list'
         infos = client.list_clusters(project_id: options[:project_id])
-        cache_id2name('cluster', infos)
+        cache_id('cluster', infos, 'name')
         cache_association('cluster', 'project', infos, 'group_id')
         ap infos
       when 'show'
@@ -211,6 +211,7 @@ module MongoCloud
           raise "Project id is required"
         end
         infos = client.list_processes(project_id: project_id)
+        cache_id('proc', infos, 'hostname')
         ap infos
       when 'measurements'
         ap client.get_process_measurements(project_id: options[:project_id],
@@ -238,18 +239,18 @@ module MongoCloud
       end
     end
 
-    def cache_id2name(key, infos)
+    def cache_id(key, infos, field_name)
       case infos
       when Array
         infos.each do |info|
-          cache_id2name(key, info)
+          cache_id(key, info, field_name)
         end
       when Hash
         info = infos
-        cache["#{key}:id2name"] ||= {}
-        cache["#{key}:id2name"][info['id']] = info['name']
-        cache["#{key}:name2id"] ||= {}
-        cache["#{key}:name2id"][info['name']] = info['id']
+        cache["#{key}:id:#{field_name}"] ||= {}
+        cache["#{key}:id:#{field_name}"][info['id']] = info[field_name]
+        cache["#{key}:#{field_name}:id"] ||= {}
+        cache["#{key}:#{field_name}:id"][info[field_name]] = info['id']
       else
         raise "Unexpected type #{infos}"
       end
