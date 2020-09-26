@@ -12,9 +12,9 @@ module MongoCloud
 
     class ApiError < StandardError
       def initialize(msg, status: nil, body: nil)
-        @msg = msg
         @status = status
         @body = body
+        super(msg)
       end
 
       attr_reader :status
@@ -238,7 +238,12 @@ module MongoCloud
       unless (200..202).include?(response.status)
         error = nil
         begin
-          error = Oj.load(response.body)['error']
+          payload = Oj.load(response.body)
+          if payload.key?('detail')
+            error = "#{payload['error']}: #{payload['detail']}"
+          else
+            error = payload['error']
+          end
         rescue
           error = response.body
         end
