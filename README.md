@@ -12,11 +12,17 @@ organization management).
 - Easier to use command line argument/option structure.
 - A Ruby API client consumable by other libraries/programs.
 
-## Usage
+## Configuration
 
 Credentials can be given as top-level command-line options:
 
     cloud -u $USERNAME -p $PASSWORD ...
+
+They can also be supplied via mongocli-compatible environment variables:
+
+    export MCLI_PUBLIC_API_KEY=$USERNAME MCLI_PRIVATE_API_KEY=$PASSWORD
+
+## Usage
 
 Organization:
 
