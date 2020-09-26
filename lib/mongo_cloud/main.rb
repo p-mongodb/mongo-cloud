@@ -281,9 +281,11 @@ module MongoCloud
       when Hash
         info = infos
         cache["#{key}:id:#{field_name}"] ||= {}
-        cache["#{key}:id:#{field_name}"][info['id']] = info[field_name]
+        cache["#{key}:id:#{field_name}"][info['id']] = info.fetch(field_name)
+        cache["#{key}:id:#{field_name}"] = cache["#{key}:id:#{field_name}"]
         cache["#{key}:#{field_name}:id"] ||= {}
-        cache["#{key}:#{field_name}:id"][info[field_name]] = info['id']
+        cache["#{key}:#{field_name}:id"][info[field_name]] = info.fetch('id')
+        cache["#{key}:#{field_name}:id"] = cache["#{key}:#{field_name}:id"]
       else
         raise "Unexpected type #{infos}"
       end
@@ -298,7 +300,8 @@ module MongoCloud
       when Hash
         info = infos
         cache["#{child_key}-#{parent_key}"] ||= {}
-        cache["#{child_key}-#{parent_key}"][info['id']] = info[foreign_key]
+        cache["#{child_key}-#{parent_key}"][info['id']] = info.fetch(foreign_key)
+        cache["#{child_key}-#{parent_key}"] = cache["#{child_key}-#{parent_key}"]
       else
         raise "Unexpected type #{infos}"
       end
