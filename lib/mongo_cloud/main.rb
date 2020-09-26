@@ -114,7 +114,9 @@ module MongoCloud
         cache_association('cluster', 'project', infos, 'project_id')
         ap infos
       when 'show'
-        ap client.get_cluster(project_id: options[:project_id], name: argv.shift)
+        name = argv.shift
+        name = cache['cluster:id:name'].fetch(name, name)
+        ap client.get_cluster(project_id: options[:project_id], name: name)
       when 'log'
         puts client.get_cluster_log(project_id: options[:project_id],
           hostname: argv.shift, name: argv.shift&.to_sym || :mongod, decompress: true)
