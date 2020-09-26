@@ -135,18 +135,18 @@ module MongoCloud
     end
 
     def create_db_user(project_id:,
-      username:, password:
+      username:, password:, roles: nil
     )
       payload = {
         username: username,
         password: password,
         databaseName: 'admin',
-        roles: [
+        roles: roles || [
           roleName: 'atlasAdmin',
           databaseName: 'admin',
         ],
       }.compact
-      request_json(:post, "groups/#{escape(project_id)}/databaseUsers", payload)
+      request_json(:post, "groups/#{escape(project_id)}/databaseUsers", payload, {})
     end
 
     # Processes
