@@ -239,7 +239,7 @@ module MongoCloud
         unless hostname
           raise "Hostname is required"
         end
-        log_name = argv.shift
+        log_name = argv.shift || 'mongod'
         if LOG_NAME_MAP.key?(log_name)
           log_name = LOG_NAME_MAP[log_name]
         end
