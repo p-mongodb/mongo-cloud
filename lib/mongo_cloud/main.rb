@@ -111,7 +111,7 @@ module MongoCloud
       when 'list'
         infos = client.list_clusters(project_id: options[:project_id])
         cache_id('cluster', infos, 'name')
-        cache_association('cluster', 'project', infos, 'group_id')
+        cache_association('cluster', 'project', infos, 'project_id')
         ap infos
       when 'show'
         ap client.get_cluster(project_id: options[:project_id], name: argv.shift)
