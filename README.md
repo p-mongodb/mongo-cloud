@@ -53,8 +53,9 @@ Database users:
 
 Deployments:
 
-    mongo-cloud cluster -p 1234cafe... list
-    mongo-cloud cluster -p 1234cafe... show ClusterName
+    mongo-cloud cluster -p PROJECT-ID create --name NAME --config YAML-CONFIG
+    mongo-cloud cluster -p PROJECT-ID list
+    mongo-cloud cluster -p PROJECT-ID show ClusterName
 
 ## License
 

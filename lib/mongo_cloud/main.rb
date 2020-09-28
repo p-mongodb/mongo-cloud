@@ -1,3 +1,5 @@
+autoload :JSON, 'json'
+autoload :YAML, 'yaml'
 require 'time'
 require 'awesome_print'
 require 'daybreak'
@@ -112,7 +114,7 @@ module MongoCloud
         opts.on('-p', '--project=PROJECT', String, 'Project ID') do |v|
           options[:project_id] = v
         end
-      end.parse!(argv)
+      end.order!(argv)
 
       client = Client.new(**global_options.slice(*%i(user password)))
 
@@ -136,6 +138,25 @@ module MongoCloud
       when 'log'
         puts client.get_cluster_log(project_id: options[:project_id],
           hostname: argv.shift, name: argv.shift&.to_sym || :mongod, decompress: true)
+      when 'create'
+        parser = OptionParser.new do |opts|
+          opts.on('--name=NAME', String, 'Project name to create') do |v|
+            options[:name] = v
+          end
+
+          opts.on('--config=CONFIG', String, 'Project configuration in YAML or JSON format') do |v|
+            if v.strip.start_with?('?')
+              v = JSON.load(v)
+            else
+              v = YAML.load(v)
+            end
+            options[:config] = v
+          end
+        end.order!(argv)
+
+        client.create_cluster(project_id: options[:project_id],
+          name: options.fetch(:name), **(options[:config] || {}),
+        )
       else
         raise 'bad usage'
       end
