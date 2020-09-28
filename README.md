@@ -22,6 +22,10 @@ They can also be supplied via mongocli-compatible environment variables:
 
     export MCLI_PUBLIC_API_KEY=$USERNAME MCLI_PRIVATE_API_KEY=$PASSWORD
 
+To use atlas-dev, set `MCLI_OPS_MANAGER_URL`:
+
+    export MCLI_OPS_MANAGER_URL=https://cloud-dev.mongodb.com
+
 ## Usage
 
 Organization:

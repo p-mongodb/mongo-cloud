@@ -270,7 +270,9 @@ module MongoCloud
     end
 
     def connection
-      base = options[:base_url] || ENV['MCLI_BASE_URL'] || 'https://cloud.mongodb.com'
+      # The MCLI_OPS_MANAGER_URL name is simply what mongocli uses,
+      # ops manager may not actually be involved in any way.
+      base = options[:base_url] || ENV['MCLI_OPS_MANAGER_URL'] || 'https://cloud.mongodb.com'
       base = URI.parse(base)
       unless base.path.end_with?('/')
         base.path = base.path + '/'
