@@ -1,3 +1,4 @@
+require 'time'
 require 'awesome_print'
 require 'daybreak'
 require 'optparse'
@@ -206,6 +207,9 @@ module MongoCloud
         opts.on('--period=PERIOD', String, 'Measurements period') do |v|
           options[:period] = v.upcase
         end
+        opts.on('--start=START-TIME', String, 'Start time') do |v|
+          options[:start_time] = Time.parse(v)
+        end
       end.parse!(argv)
 
       client = Client.new(**global_options.slice(*%i(user password)))
@@ -250,7 +254,7 @@ module MongoCloud
         end
         log = client.get_process_log(project_id: project_id,
           hostname: hostname, name: log_name, decompress: true,
-          start_time: 0)
+          start_time: options[:start_time])
         puts log
       else
         raise 'bad usage'
