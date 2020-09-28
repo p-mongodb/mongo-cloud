@@ -60,11 +60,11 @@ module MongoCloud
     end
 
     def get_project(id)
-      request_json(:get, "groups/#{escape(id)}")
+      convert_keys(request_json(:get, "groups/#{escape(id)}"))
     end
 
     def get_project_by_name(name)
-      request_json(:get, "groups/byName/#{escape(name)}")
+      convert_keys(request_json(:get, "groups/byName/#{escape(name)}"))
     end
 
     def create_project(org_id:, name:)
