@@ -35,6 +35,7 @@ Organization:
 
 Projects:
 
+    mongo-cloud project create --org ORG-ID --name PROJECT-NAME
     mongo-cloud project list
     mongo-cloud project show 1234cafe...
 
