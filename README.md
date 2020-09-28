@@ -30,30 +30,30 @@ To use atlas-dev, set `MCLI_OPS_MANAGER_URL`:
 
 Organization:
 
-    cloud org list
-    cloud org show 1234cafe...
+    mongo-cloud org list
+    mongo-cloud org show 1234cafe...
 
 Projects:
 
-    cloud project list
-    cloud project show 1234cafe...
+    mongo-cloud project list
+    mongo-cloud project show 1234cafe...
 
 IP whitelists:
 
-    cloud whitelist -p 1234cafe... list
-    cloud whitelist -p 1234cafe... show 0.0.0.0/0
-    cloud whitelist -p 1234cafe... add 0.0.0.0
+    mongo-cloud whitelist -p 1234cafe... list
+    mongo-cloud whitelist -p 1234cafe... show 0.0.0.0/0
+    mongo-cloud whitelist -p 1234cafe... add 0.0.0.0
 
 Database users:
 
-    cloud dbuser -p 1234cafe... list
-    cloud dbuser -p 1234cafe... show UserName
-    cloud dbuser -p 1234cafe... create UserName Password
+    mongo-cloud dbuser -p 1234cafe... list
+    mongo-cloud dbuser -p 1234cafe... show UserName
+    mongo-cloud dbuser -p 1234cafe... create UserName Password
 
 Deployments:
 
-    cloud cluster -p 1234cafe... list
-    cloud cluster -p 1234cafe... show ClusterName
+    mongo-cloud cluster -p 1234cafe... list
+    mongo-cloud cluster -p 1234cafe... show ClusterName
 
 ## License
 
