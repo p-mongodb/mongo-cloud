@@ -265,9 +265,14 @@ module MongoCloud
     end
 
     def connection
-      @connection ||= Faraday.new("https://cloud.mongodb.com/api/atlas/v1.0/") do |f|
-        username = options[:user] || ENV['MCLI_PUBLIC_API_KEY']
-        password = options[:password] || ENV['MCLI_PRIVATE_API_KEY']
+      base = options[:base_url] || ENV['MCLI_BASE_URL'] || 'https://cloud.mongodb.com'
+      base = URI.parse(base)
+      unless base.path.end_with?('/')
+        base.path = base.path + '/'
+      end
+      @connection ||= Faraday.new(URI.join(base, "api/atlas/v1.0/")) do |f|
+        username = options[:user] || ENV.fetch('MCLI_PUBLIC_API_KEY')
+        password = options[:password] || ENV.fetch('MCLI_PRIVATE_API_KEY')
 
         f.request :url_encoded
         f.request :digest, username, password
