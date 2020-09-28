@@ -82,6 +82,21 @@ module MongoCloud
         ap infos
       when 'show'
         ap client.get_project(argv.shift)
+      when 'create'
+        parser = OptionParser.new do |opts|
+          opts.on('--org=ORG', String, 'Organization ID') do |v|
+            options[:org_id] = v
+          end
+
+          opts.on('--name=NAME', String, 'Project name to create') do |v|
+            options[:name] = v
+          end
+        end.order!(argv)
+
+        client.create_project(
+          org_id: options.fetch(:org_id),
+          name: options.fetch(:name),
+        )
       else
         raise 'bad usage'
       end

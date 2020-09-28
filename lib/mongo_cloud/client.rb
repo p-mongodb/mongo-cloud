@@ -67,6 +67,11 @@ module MongoCloud
       request_json(:get, "groups/byName/#{escape(name)}")
     end
 
+    def create_project(org_id:, name:)
+      request_json(:post, "groups",
+        {orgId: org_id, name: name}, {})
+    end
+
     def delete_project(id)
       request_json(:delete, "groups/#{escape(id)}")
     end
