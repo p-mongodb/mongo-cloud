@@ -169,6 +169,10 @@ module MongoCloud
         name = argv.shift || options[:cluster_id]
         name = cache['cluster:id:name'].fetch(name, name)
         client.reboot_cluster(project_id: options[:project_id], name: name)
+      when 'replica-set-hardware'
+        name = argv.shift || options[:cluster_id]
+        name = cache['cluster:id:name'].fetch(name, name)
+        ap client.get_cluster_replica_set_hardware(project_id: options[:project_id], name: name)
       else
         raise 'bad usage'
       end

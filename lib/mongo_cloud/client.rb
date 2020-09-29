@@ -93,6 +93,10 @@ module MongoCloud
       request_json(:get, "/admin/nds/groups/#{escape(project_id)}/clusterDescriptions/#{escape(name)}")
     end
 
+    def get_cluster_replica_set_hardware(project_id:, name:)
+      request_json(:get, "/admin/nds/groups/#{escape(project_id)}/clusterDescriptions/#{escape(name)}/replicaSetHardware")
+    end
+
     def delete_cluster(project_id:, name:)
       request_json(:delete, "groups/#{escape(project_id)}/clusters/#{escape(name)}")
     rescue BadRequest => exc
