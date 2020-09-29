@@ -136,7 +136,7 @@ module MongoCloud
         cache_association('cluster', 'project', infos, 'project_id')
         ap infos
       when 'show'
-        name = argv.shift
+        name = argv.shift || options[:cluster_id]
         name = cache['cluster:id:name'].fetch(name, name)
         ap client.get_cluster(project_id: options[:project_id], name: name)
       when 'show-internal'
