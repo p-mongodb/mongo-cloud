@@ -87,6 +87,12 @@ module MongoCloud
       request_json(:get, "groups/#{escape(project_id)}/clusters/#{escape(name)}")
     end
 
+    # TODO This method is currently not working.
+    # This endpoint requires atlas global operator permissions (?).
+    def get_cluster_internal(project_id:, name:)
+      request_json(:get, "/admin/nds/groups/#{escape(project_id)}/clusterDescriptions/#{escape(name)}")
+    end
+
     def delete_cluster(project_id:, name:)
       request_json(:delete, "groups/#{escape(project_id)}/clusters/#{escape(name)}")
     rescue BadRequest => exc

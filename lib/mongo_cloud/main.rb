@@ -139,6 +139,10 @@ module MongoCloud
         name = argv.shift
         name = cache['cluster:id:name'].fetch(name, name)
         ap client.get_cluster(project_id: options[:project_id], name: name)
+      when 'show-internal'
+        name = argv.shift
+        name = cache['cluster:id:name'].fetch(name, name)
+        ap client.get_cluster_internal(project_id: options[:project_id], name: name)
       when 'log'
         puts client.get_cluster_log(project_id: options[:project_id],
           hostname: argv.shift, name: argv.shift&.to_sym || :mongod, decompress: true)
