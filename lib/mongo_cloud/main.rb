@@ -107,6 +107,7 @@ module MongoCloud
     def cluster(argv)
       options = {
         project_id: global_options.delete(:project_id),
+        cluster_id: global_options.delete(:cluster_id),
       }
       parser = OptionParser.new do |opts|
         configure_global_options(opts)
@@ -115,11 +116,14 @@ module MongoCloud
           options[:project_id] = v
         end
       end.order!(argv)
+      if options[:cluster_id] && !options[:project_id]
+        options[:project_id] = cache["cluster-project"]&.[](options[:cluster_id])
+      end
 
       client = Client.new(**global_options.slice(*%i(user password)))
 
       begin
-        client.get_project(options[:project_id])
+        client.get_project(options.fetch(:project_id))
       rescue Client::NotFound
         info = client.get_project_by_name(options[:project_id])
         options[:project_id] = info['id']
@@ -157,6 +161,10 @@ module MongoCloud
         client.create_cluster(project_id: options[:project_id],
           name: options.fetch(:name), **(options[:config] || {}),
         )
+      when 'reboot'
+        name = argv.shift || options[:cluster_id]
+        name = cache['cluster:id:name'].fetch(name, name)
+        client.reboot_cluster(project_id: options[:project_id], name: name)
       else
         raise 'bad usage'
       end

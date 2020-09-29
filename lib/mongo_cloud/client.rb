@@ -107,6 +107,10 @@ module MongoCloud
         opts)
     end
 
+    def reboot_cluster(project_id:, name:)
+      request_json(:post, "/api/private/nds/groups/#{escape(project_id)}/clusters/#{escape(name)}/reboot", {}, {})
+    end
+
     # IP whitelists
 
     def list_whitelist_entries(project_id:)
@@ -213,7 +217,11 @@ module MongoCloud
 
     def request_json(meth, url, params=nil, **options)
       response = request(meth, url, params, **options)
-      Oj.load(response.body)
+      if response.body.empty?
+        nil
+      else
+        Oj.load(response.body)
+      end
     end
 
     def request(meth, url, params=nil, **options)

@@ -95,6 +95,7 @@ Clusters:
     mongo-cloud cluster -p PROJECT-ID create --name NAME --config YAML-CONFIG
     mongo-cloud cluster -p PROJECT-ID list
     mongo-cloud cluster -p PROJECT-ID show ClusterName
+    mongo-cloud cluster [-p PROJECT-ID] -c CLUSTER-ID reboot
 
 ## License
 
