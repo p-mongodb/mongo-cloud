@@ -199,6 +199,10 @@ module MongoCloud
         name = argv.shift || options[:cluster_id]
         name = cache['cluster:id:name'].fetch(name, name)
         client.delete_cluster(project_id: options[:project_id], name: name)
+      when 'delete-all'
+        client.list_clusters(project_id: options[:project_id]).each do |info|
+          client.delete_cluster(project_id: options[:project_id], name: info['name'])
+        end
       else
         raise 'bad usage'
       end
