@@ -190,6 +190,12 @@ module MongoCloud
         name = cache['cluster:id:name'].fetch(name, name)
         ap client.get_cluster_replica_set_hardware(project_id: options[:project_id], name: name)
       when 'delete'
+        parser = OptionParser.new do |opts|
+          opts.on('--cluster-id=CLUSTER', String, 'Cluster ID') do |v|
+            options[:cluster_id] = v
+          end
+        end.order!(argv)
+
         name = argv.shift || options[:cluster_id]
         name = cache['cluster:id:name'].fetch(name, name)
         client.delete_cluster(project_id: options[:project_id], name: name)
