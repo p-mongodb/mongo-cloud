@@ -77,6 +77,14 @@ module MongoCloud
 
       client = Client.new(**global_options.slice(*%i(user password)))
 
+      if argv.empty?
+        if options[:project_id]
+          argv = %w(show)
+        else
+          argv = %w(list)
+        end
+      end
+
       case argv.shift
       when 'list'
         infos = client.list_projects
@@ -127,6 +135,14 @@ module MongoCloud
       rescue Client::NotFound
         info = client.get_project_by_name(options[:project_id])
         options[:project_id] = info['id']
+      end
+
+      if argv.empty?
+        if options[:cluster_id]
+          argv = %w(show)
+        elsif options[:project_id]
+          argv = %w(list)
+        end
       end
 
       case argv.shift
