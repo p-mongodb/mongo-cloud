@@ -37,7 +37,7 @@ module MongoCloud
         usage('no command given')
       end
 
-      commands = %w(org project cluster whitelist dbuser proc)
+      commands = %w(org project cluster whitelist dbuser log proc)
       if commands.include?(command)
         send(command, argv)
       else
@@ -272,6 +272,74 @@ module MongoCloud
       end
     end
 
+    def log(argv)
+      options = {
+        project_id: global_options.delete(:project_id),
+        cluster_id: global_options.delete(:cluster_id),
+      }
+      parser = OptionParser.new do |opts|
+        configure_global_options(opts)
+
+        opts.on('-p', '--project=PROJECT', String, 'Project ID') do |v|
+          options[:project_id] = v
+        end
+        opts.on('-f', '--file=FILE', String, 'Log file to retrieve') do |v|
+          options[:file_name] = v
+        end
+        opts.on('-t', '--host=HOST', String, 'Host id or hostname to retrieve logs from') do |v|
+          options[:host] = v
+        end
+        opts.on('--start=START-TIME', String, 'Start time') do |v|
+          options[:start_time] = Time.parse(v)
+        end
+        opts.on('--end=START-TIME', String, 'End time') do |v|
+          options[:end_time] = Time.parse(v)
+        end
+      end.parse!(argv)
+
+      if argv.empty?
+        if options[:file_name]
+          argv = %w(show)
+        else
+          argv = %w(list)
+        end
+      end
+
+      case argv.shift
+      when 'list'
+        project_id = get_project_id(options)
+        name = options[:cluster_id]
+        name = cache['cluster:id:name'].fetch(name, name)
+        info = client.get_cluster(project_id: project_id, name: name)
+        #require'byebug';byebug
+        logs = %w(mongod mongod-audit)
+        if info['cluster_type'] == 'SHARDED'
+          logs += %w(mongos mongos-audit)
+        end
+        ap logs
+      when 'show'
+        project_id = get_project_id(options)
+        host_id = options[:host]
+        hostname = cache['proc:id:hostname'].fetch(host_id, host_id)
+        unless hostname
+          raise "Hostname is required"
+        end
+        log_name = options[:file_name]
+        if LOG_NAME_MAP.key?(log_name)
+          log_name = LOG_NAME_MAP[log_name]
+        end
+        unless log_name.end_with?('.gz')
+          log_name += '.gz'
+        end
+        log = client.get_process_log(project_id: project_id,
+          hostname: hostname, name: log_name, decompress: true,
+          start_time: options[:start_time])
+        puts log
+      else
+        raise 'bad usage'
+      end
+    end
+
     def proc(argv)
       options = {
         project_id: global_options.delete(:project_id),
@@ -296,6 +364,10 @@ module MongoCloud
 
       client = Client.new(**global_options.slice(*%i(user password)))
 
+      if argv.empty?
+        argv = %w(list)
+      end
+
       case argv.shift
       when 'list'
         project_id = options[:project_id] || begin
@@ -313,31 +385,6 @@ module MongoCloud
         ap client.get_process_measurements(project_id: options[:project_id],
           granularity: options[:granularity], period: options[:period],
           process_id: argv.shift)
-      when 'log'
-        project_id = options[:project_id] || begin
-          if options[:cluster_id]
-            cache["cluster-project"]&.[](options[:cluster_id])
-          end
-        end
-        unless project_id
-          raise "Project id is required"
-        end
-        host_id = argv.shift
-        hostname = cache['proc:id:hostname'].fetch(host_id, host_id)
-        unless hostname
-          raise "Hostname is required"
-        end
-        log_name = argv.shift || 'mongod'
-        if LOG_NAME_MAP.key?(log_name)
-          log_name = LOG_NAME_MAP[log_name]
-        end
-        unless log_name.end_with?('.gz')
-          log_name += '.gz'
-        end
-        log = client.get_process_log(project_id: project_id,
-          hostname: hostname, name: log_name, decompress: true,
-          start_time: options[:start_time])
-        puts log
       else
         raise 'bad usage'
       end
@@ -393,6 +440,31 @@ module MongoCloud
       else
         raise "Unexpected type #{infos}"
       end
+    end
+
+    def get_project_id(options)
+      project_id = options[:project_id] || begin
+        if options[:cluster_id]
+          cache["cluster-project"]&.[](options[:cluster_id])
+        end
+      end
+
+      begin
+        client.get_project(project_id)
+      rescue Client::NotFound
+        info = client.get_project_by_name(project_id)
+        project_id = info['id']
+      end
+
+      unless project_id
+        raise "Project id is required"
+      end
+
+      project_id
+    end
+
+    def client
+      @client ||= Client.new(**global_options.slice(*%i(user password)))
     end
 
     class << self

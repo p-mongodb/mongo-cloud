@@ -84,7 +84,7 @@ module MongoCloud
     end
 
     def get_cluster(project_id:, name:)
-      request_json(:get, "groups/#{escape(project_id)}/clusters/#{escape(name)}")
+      convert_keys(request_json(:get, "groups/#{escape(project_id)}/clusters/#{escape(name)}"))
     end
 
     # TODO This method is currently not working.
