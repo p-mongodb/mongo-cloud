@@ -295,10 +295,16 @@ module MongoCloud
         opts.on('--end=START-TIME', String, 'End time') do |v|
           options[:end_time] = Time.parse(v)
         end
+        opts.on('-o', '--out=PATH', String, 'Write log to PATH') do |v|
+          options[:out_path] = v
+        end
+        opts.on('-z', '--compress', 'Keep the log compressed') do |v|
+          options[:compress] = true
+        end
       end.parse!(argv)
 
       if argv.empty?
-        if options[:file_name]
+        if options[:file_name] || options[:host]
           argv = %w(show)
         else
           argv = %w(list)
@@ -324,17 +330,22 @@ module MongoCloud
         unless hostname
           raise "Hostname is required"
         end
-        log_name = options[:file_name]
+        log_name = options[:file_name] || 'mongod'
         if LOG_NAME_MAP.key?(log_name)
           log_name = LOG_NAME_MAP[log_name]
         end
         unless log_name.end_with?('.gz')
           log_name += '.gz'
         end
+        decompress = !options[:compress]
         log = client.get_process_log(project_id: project_id,
-          hostname: hostname, name: log_name, decompress: true,
-          start_time: options[:start_time])
-        puts log
+          hostname: hostname, name: log_name, decompress: decompress,
+          start_time: options[:start_time], end_time: options[:end_time])
+        if options[:out_path]
+          File.open(options[:out_path], 'w') do |f|
+            f << log
+          end
+        end
       else
         raise 'bad usage'
       end
