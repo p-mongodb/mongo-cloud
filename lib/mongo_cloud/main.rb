@@ -40,7 +40,7 @@ module MongoCloud
 
       commands = %w(org project cluster whitelist dbuser log proc)
       if commands.include?(command)
-        send(command, argv)
+        send(command.gsub('-', '_'), argv)
       else
         usage("unknown command: #{command}")
       end
@@ -125,18 +125,8 @@ module MongoCloud
           options[:project_id] = v
         end
       end.order!(argv)
-      if options[:cluster_id] && !options[:project_id]
-        options[:project_id] = cache["cluster-project"]&.[](options[:cluster_id])
-      end
 
-      client = Client.new(**global_options.slice(*%i(user password)))
-
-      begin
-        client.get_project(options.fetch(:project_id))
-      rescue Client::NotFound
-        info = client.get_project_by_name(options[:project_id])
-        options[:project_id] = info['id']
-      end
+      resolve_project_and_cluster(options)
 
       if argv.empty?
         if options[:cluster_id]
@@ -182,6 +172,10 @@ module MongoCloud
         client.create_cluster(project_id: options[:project_id],
           name: options.fetch(:name), **(options[:config] || {}),
         )
+      when 'test-failover'
+        name = argv.shift || options[:cluster_id]
+        name = cache['cluster:id:name'].fetch(name, name)
+        client.failover_cluster(project_id: options[:project_id], name: name)
       when 'reboot'
         name = argv.shift || options[:cluster_id]
         name = cache['cluster:id:name'].fetch(name, name)
@@ -529,6 +523,19 @@ module MongoCloud
       end
 
       project_id
+    end
+
+    def resolve_project_and_cluster(options)
+      if options[:cluster_id] && !options[:project_id]
+        options[:project_id] = cache["cluster-project"]&.[](options[:cluster_id])
+      end
+
+      begin
+        client.get_project(options.fetch(:project_id))
+      rescue Client::NotFound
+        info = client.get_project_by_name(options[:project_id])
+        options[:project_id] = info['id']
+      end
     end
 
     def client

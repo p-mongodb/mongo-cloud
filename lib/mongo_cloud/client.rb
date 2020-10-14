@@ -223,6 +223,10 @@ module MongoCloud
       body
     end
 
+    def failover_cluster(project_id:, name:)
+      request(:post, "groups/#{escape(project_id)}/clusters/#{escape(name)}/restartPrimaries")
+    end
+
     # ---
 
     def request_json(meth, url, params=nil, **options)
