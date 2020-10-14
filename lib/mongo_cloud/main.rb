@@ -147,7 +147,7 @@ module MongoCloud
         name = cache['cluster:id:name'].fetch(name, name)
         ap client.get_cluster(project_id: options[:project_id], name: name)
       when 'show-internal'
-        name = argv.shift
+        name = argv.shift || options[:cluster_id]
         name = cache['cluster:id:name'].fetch(name, name)
         ap client.get_cluster_internal(project_id: options[:project_id], name: name)
       when 'log'
