@@ -338,59 +338,12 @@ module MongoCloud
           raise "Hostname is required"
         end
         log_name = options[:file_name] || 'mongod'
-        if LOG_NAME_MAP.key?(log_name)
-          log_name = LOG_NAME_MAP[log_name]
-        end
-        unless log_name.end_with?('.gz')
-          log_name += '.gz'
-        end
-        decompress = !options[:compress]
-        if options[:all]
-          log = ''
-          start = nil
-          loop do
-            puts "Retrieve from #{start}"
-
-            chunk = client.get_process_log(project_id: project_id,
-              hostname: hostname, name: log_name, decompress: true,
-              start_time: start || 0)
-            log << chunk
-
-            if start.nil?
-              io = StringIO.new(chunk)
-              loop do
-                line = io.readline
-                if line.nil?
-                  raise "Did not find any timestamps in log"
-                end
-                time_str = line.split(' ', 2).first
-                unless time_str.nil? || time_str.empty?
-                  begin
-                    start = Time.parse(time_str)
-                    break
-                  rescue ArgumentError
-                  end
-                end
-              end
-            end
-
-            start += 5 * 60
-
-            if start > Time.now
-              break
-            end
-          end
-          if options[:compress]
-            str = ''
-            gz = Zlib::GzipWriter.new(StringIO.new(str))
-            gz.write(log)
-            gz.close
-            log = str
-          end
+        log = if log_name == 'ftdc'
+          get_ftdc_log(project_id: project_id, **options)
         else
-          log = client.get_process_log(project_id: project_id,
-            hostname: hostname, name: log_name, decompress: decompress,
-            start_time: options[:start_time], end_time: options[:end_time])
+          get_process_log(project_id: project_id, hostname: hostname,
+            name: log_name, start_time: options[:start_time], end_time: options[:end_time],
+            all: options[:all])
         end
         if options[:out_path]
           File.open(options[:out_path], 'w') do |f|
@@ -536,6 +489,67 @@ module MongoCloud
         info = client.get_project_by_name(options[:project_id])
         options[:project_id] = info['id']
       end
+    end
+
+    def get_process_log(project_id:, hostname:, name:, **options)
+      if LOG_NAME_MAP.key?(name)
+        name = LOG_NAME_MAP[name]
+      end
+      unless name.end_with?('.gz')
+        name += '.gz'
+      end
+      decompress = !options[:compress]
+      if options[:all]
+        log = ''
+        start = nil
+        loop do
+          puts "Retrieve from #{start}"
+
+          chunk = client.get_process_log(project_id: project_id,
+            hostname: hostname, name: name, decompress: true,
+            start_time: start || 0)
+          log << chunk
+
+          if start.nil?
+            io = StringIO.new(chunk)
+            loop do
+              line = io.readline
+              if line.nil?
+                raise "Did not find any timestamps in log"
+              end
+              time_str = line.split(' ', 2).first
+              unless time_str.nil? || time_str.empty?
+                begin
+                  start = Time.parse(time_str)
+                  break
+                rescue ArgumentError
+                end
+              end
+            end
+          end
+
+          start += 5 * 60
+
+          if start > Time.now
+            break
+          end
+        end
+        if options[:compress]
+          str = ''
+          gz = Zlib::GzipWriter.new(StringIO.new(str))
+          gz.write(log)
+          gz.close
+          log = str
+        end
+        log
+      else
+        client.get_process_log(project_id: project_id,
+          hostname: hostname, name: name, decompress: decompress,
+          start_time: options[:start_time], end_time: options[:end_time])
+      end
+    end
+
+    def get_ftdc_log(project_id:)
     end
 
     def client
