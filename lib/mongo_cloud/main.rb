@@ -353,39 +353,38 @@ module MongoCloud
         decompress = !options[:compress]
         if options[:all]
           log = ''
-          start = 0
+          start = nil
           loop do
+            puts "Retrieve from #{start}"
+
             chunk = client.get_process_log(project_id: project_id,
               hostname: hostname, name: log_name, decompress: true,
-              start_time: start)
+              start_time: start || 0)
             log << chunk
-            search_from = chunk.length
-            time = nil
-            loop do
-              index = chunk.rindex("\n", search_from)
-              if index.nil?
-                raise "Did not find any timestamps in log"
-              end
-              line = chunk[index...search_from].strip
-              time_str = line.split(' ', 2).first
-              unless time_str.nil? || time_str.empty?
-                begin
-                  time = Time.parse(time_str)
-                  break
-                rescue ArgumentError
+
+            if start.nil?
+              io = StringIO.new(chunk)
+              loop do
+                line = io.readline
+                if line.nil?
+                  raise "Did not find any timestamps in log"
+                end
+                time_str = line.split(' ', 2).first
+                unless time_str.nil? || time_str.empty?
+                  begin
+                    start = Time.parse(time_str)
+                    break
+                  rescue ArgumentError
+                  end
                 end
               end
-              if index == 0
-                raise "Did not find any timestamps in log"
-              end
-              search_from = index - 1
             end
-            # This might drop entries if the same second spans multiple files
-            start = time + 1
+
+            start += 5 * 60
+
             if start > Time.now
               break
             end
-            start = start.to_i
           end
           if options[:compress]
             str = ''
