@@ -1,3 +1,4 @@
+autoload :Zlib, 'zlib'
 autoload :JSON, 'json'
 autoload :YAML, 'yaml'
 require 'time'
@@ -295,6 +296,9 @@ module MongoCloud
         opts.on('--end=START-TIME', String, 'End time') do |v|
           options[:end_time] = Time.parse(v)
         end
+        opts.on('-a', '--all', 'Retrieve the complete log') do |v|
+          options[:all] = true
+        end
         opts.on('-o', '--out=PATH', String, 'Write log to PATH') do |v|
           options[:out_path] = v
         end
@@ -302,6 +306,15 @@ module MongoCloud
           options[:compress] = true
         end
       end.parse!(argv)
+
+      if options[:all]
+        if options[:start_time]
+          raise "--start cannot be used with --all"
+        end
+        if options[:end_time]
+          raise "--end cannot be used with --all"
+        end
+      end
 
       if argv.empty?
         if options[:file_name] || options[:host]
@@ -338,9 +351,54 @@ module MongoCloud
           log_name += '.gz'
         end
         decompress = !options[:compress]
-        log = client.get_process_log(project_id: project_id,
-          hostname: hostname, name: log_name, decompress: decompress,
-          start_time: options[:start_time], end_time: options[:end_time])
+        if options[:all]
+          log = ''
+          start = 0
+          loop do
+            chunk = client.get_process_log(project_id: project_id,
+              hostname: hostname, name: log_name, decompress: true,
+              start_time: start)
+            log << chunk
+            search_from = chunk.length
+            time = nil
+            loop do
+              index = chunk.rindex("\n", search_from)
+              if index.nil?
+                raise "Did not find any timestamps in log"
+              end
+              line = chunk[index...search_from].strip
+              time_str = line.split(' ', 2).first
+              unless time_str.nil? || time_str.empty?
+                begin
+                  time = Time.parse(time_str)
+                  break
+                rescue ArgumentError
+                end
+              end
+              if index == 0
+                raise "Did not find any timestamps in log"
+              end
+              search_from = index - 1
+            end
+            # This might drop entries if the same second spans multiple files
+            start = time + 1
+            if start > Time.now
+              break
+            end
+            start = start.to_i
+          end
+          if options[:compress]
+            str = ''
+            gz = Zlib::GzipWriter.new(StringIO.new(str))
+            gz.write(log)
+            gz.close
+            log = str
+          end
+        else
+          log = client.get_process_log(project_id: project_id,
+            hostname: hostname, name: log_name, decompress: decompress,
+            start_time: options[:start_time], end_time: options[:end_time])
+        end
         if options[:out_path]
           File.open(options[:out_path], 'w') do |f|
             f << log
