@@ -240,6 +240,10 @@ module MongoCloud
       convert_keys(request_json(:get, "groups/#{escape(project_id)}/logCollectionJobs/#{escape(id)}"))
     end
 
+    def list_log_collection_jobs(project_id:)
+      convert_keys(request_json(:get, "groups/#{escape(project_id)}/logCollectionJobs"))
+    end
+
     def failover_cluster(project_id:, name:)
       request(:post, "groups/#{escape(project_id)}/clusters/#{escape(name)}/restartPrimaries")
     end

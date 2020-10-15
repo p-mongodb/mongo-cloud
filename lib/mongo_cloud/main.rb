@@ -38,7 +38,10 @@ module MongoCloud
         usage('no command given')
       end
 
-      commands = %w(org project cluster whitelist dbuser log proc)
+      commands = %w(
+        org project cluster whitelist dbuser log proc
+        log-collection-job
+      )
       if commands.include?(command)
         send(command.gsub('-', '_'), argv)
       else
@@ -407,6 +410,26 @@ module MongoCloud
         ap client.get_process_measurements(project_id: options[:project_id],
           granularity: options[:granularity], period: options[:period],
           process_id: argv.shift)
+      else
+        raise 'bad usage'
+      end
+    end
+
+    def log_collection_job(argv)
+      options = {
+        project_id: global_options.delete(:project_id),
+        cluster_id: global_options.delete(:cluster_id),
+      }
+
+      project_id = get_project_id(options)
+
+      if argv.empty?
+        argv = %w(list)
+      end
+
+      case argv.shift
+      when 'list'
+        ap client.list_log_collection_jobs(project_id: project_id)
       else
         raise 'bad usage'
       end
