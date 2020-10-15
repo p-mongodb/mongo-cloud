@@ -339,16 +339,23 @@ module MongoCloud
         end
         log_name = options[:file_name] || 'mongod'
         log = if log_name == 'ftdc'
-          get_ftdc_log(project_id: project_id, **options)
+          unless options[:out_path]
+            raise "FTDC logs are returned as a compressed tarball, -o option is required or use `-o -` to write to standard output"
+          end
+          cluster_name = options[:cluster_id]
+          cluster_name = cache['cluster:id:name'].fetch(cluster_name, cluster_name)
+          get_ftdc_log(project_id: project_id, cluster_name: cluster_name)
         else
           get_process_log(project_id: project_id, hostname: hostname,
             name: log_name, start_time: options[:start_time], end_time: options[:end_time],
             all: options[:all])
         end
-        if options[:out_path]
+        if options[:out_path] && options[:out_path] != '-'
           File.open(options[:out_path], 'w') do |f|
             f << log
           end
+        else
+          puts log
         end
       else
         raise 'bad usage'
@@ -549,7 +556,41 @@ module MongoCloud
       end
     end
 
-    def get_ftdc_log(project_id:)
+    def get_ftdc_log(project_id:, cluster_name:)
+      info = client.get_cluster_internal(project_id: project_id,
+        name: cluster_name)
+
+      case info.fetch('cluster_type')
+      when 'REPLICASET'
+        resource_type = 'REPLICASET'
+        resource_name = info.fetch('deployment_item_name')
+      when 'SHARDED'
+        resource_type = 'CLUSTER'
+        resource_name = info.fetch('name')
+      else
+        raise "Unknown cluster type"
+      end
+
+      job_id = client.create_log_collection_job(
+        project_id: project_id,
+        resource_type: resource_type,
+        resource_name: resource_name,
+        redacted: true,
+      )
+
+      loop do
+        info = client.get_log_collection_job(project_id: project_id, id: job_id)
+
+        case info.fetch('status')&.downcase
+        when 'success'
+          url = info.fetch('download_url')
+          return client.request(:get, url).body
+        when 'in_progress'
+          sleep 1
+        else
+          raise "Unexpected log collection job status"
+        end
+      end
     end
 
     def client

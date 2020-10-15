@@ -87,11 +87,8 @@ module MongoCloud
       convert_keys(request_json(:get, "groups/#{escape(project_id)}/clusters/#{escape(name)}"))
     end
 
-    # TODO This method is currently not working.
-    # This endpoint requires atlas global operator permissions (?).
+    # This endpoint requires atlas global operator permissions.
     def get_cluster_internal(project_id:, name:)
-      # This is some other internal endpoint.
-      #request_json(:get, "/admin/nds/groups/#{escape(project_id)}/clusterDescriptions/#{escape(name)}")
       convert_keys(request_json(:get, "/api/private/nds/groups/#{escape(project_id)}/clusters/#{escape(name)}"))
     end
 
@@ -225,6 +222,24 @@ module MongoCloud
       body
     end
 
+    def create_log_collection_job(project_id:, resource_type:, resource_name:,
+      redacted: true, file_size: 100_000_000, log_types: %w(FTDC)
+    )
+      payload = {
+        resourceType: resource_type,
+        resourceName: resource_name,
+        redacted: redacted,
+        sizeRequestedPerFileBytes: file_size,
+        logTypes: log_types,
+      }
+      info = request_json(:post, "groups/#{escape(project_id)}/logCollectionJobs", payload, **{})
+      info.fetch('id')
+    end
+
+    def get_log_collection_job(project_id:, id:)
+      convert_keys(request_json(:get, "groups/#{escape(project_id)}/logCollectionJobs/#{escape(id)}"))
+    end
+
     def failover_cluster(project_id:, name:)
       request(:post, "groups/#{escape(project_id)}/clusters/#{escape(name)}/restartPrimaries")
     end
@@ -334,6 +349,8 @@ module MongoCloud
           convert_keys(item)
         end
       end
+
+      return data unless Hash === data
 
       data = data.dup
       data.delete('links')
