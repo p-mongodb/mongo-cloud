@@ -233,9 +233,30 @@ module MongoCloud
 
     # Log types: ftdc mongodb automation_agent backup_agent monitoring_agent
     # This endpoint requires atlas global operator permissions in atlas.
-    def create_log_collection_job(project_id:, resource_type:, resource_name:,
+    def create_log_collection_job(project_id:,
+      cluster_name: nil, resource_type: nil, resource_name: nil,
       redacted: true, file_size: 100_000_000, log_types: nil
     )
+      if cluster_name
+        if resource_type.nil? && resource_name.nil?
+          info = get_cluster_internal(project_id: project_id,
+            name: cluster_name)
+
+          case info.fetch('cluster_type')
+          when 'REPLICASET'
+            resource_type = 'REPLICASET'
+            resource_name = info.fetch('deployment_item_name')
+          when 'SHARDED'
+            resource_type = 'CLUSTER'
+            resource_name = info.fetch('name')
+          else
+            raise "Unknown cluster type"
+          end
+        else
+          raise ArgumentError, 'Cluster name is mutually exclusive with resource type & resource name'
+        end
+      end
+
       payload = {
         resourceType: resource_type,
         resourceName: resource_name,

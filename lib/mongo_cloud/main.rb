@@ -580,24 +580,9 @@ module MongoCloud
     end
 
     def get_ftdc_log(project_id:, cluster_name:)
-      info = client.get_cluster_internal(project_id: project_id,
-        name: cluster_name)
-
-      case info.fetch('cluster_type')
-      when 'REPLICASET'
-        resource_type = 'REPLICASET'
-        resource_name = info.fetch('deployment_item_name')
-      when 'SHARDED'
-        resource_type = 'CLUSTER'
-        resource_name = info.fetch('name')
-      else
-        raise "Unknown cluster type"
-      end
-
       job_id = client.create_log_collection_job(
         project_id: project_id,
-        resource_type: resource_type,
-        resource_name: resource_name,
+        cluster_name: cluster_name,
         redacted: true,
         log_types: %w(ftdc),
       )
