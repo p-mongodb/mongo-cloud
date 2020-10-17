@@ -8,6 +8,15 @@ require 'oj'
 Oj.default_options = {mode: :compat}
 
 module MongoCloud
+  class TruncatingLogger < Logger
+    def format_message(severity, datetime, progname, msg)
+      if msg.length >= 5000
+        msg = msg[0..4997] + '...'
+      end
+      super
+    end
+  end
+
   class Client
 
     class ApiError < StandardError
@@ -328,10 +337,14 @@ module MongoCloud
 
         f.request :url_encoded
         f.request :digest, username, password
-        f.response :detailed_logger
+        f.response :detailed_logger, logger
         f.adapter Faraday.default_adapter
         f.headers['user-agent'] = 'MongoCloudClient'
       end
+    end
+
+    def logger
+      @logger ||= TruncatingLogger.new(STDERR)
     end
 
     def to_iso8601_time(time_or_str)
