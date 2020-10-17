@@ -599,6 +599,7 @@ module MongoCloud
         resource_type: resource_type,
         resource_name: resource_name,
         redacted: true,
+        log_types: %w(ftdc),
       )
 
       loop do

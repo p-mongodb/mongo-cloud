@@ -222,15 +222,17 @@ module MongoCloud
       body
     end
 
+    # Log types: ftdc mongodb automation_agent backup_agent monitoring_agent
+    # This endpoint requires atlas global operator permissions in atlas.
     def create_log_collection_job(project_id:, resource_type:, resource_name:,
-      redacted: true, file_size: 100_000_000, log_types: %w(FTDC)
+      redacted: true, file_size: 100_000_000, log_types: nil
     )
       payload = {
         resourceType: resource_type,
         resourceName: resource_name,
         redacted: redacted,
         sizeRequestedPerFileBytes: file_size,
-        logTypes: log_types,
+        logTypes: log_types.map(&:to_s).map(&:upcase),
       }
       info = request_json(:post, "groups/#{escape(project_id)}/logCollectionJobs", payload, **{})
       info.fetch('id')
