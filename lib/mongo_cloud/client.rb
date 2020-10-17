@@ -248,7 +248,10 @@ module MongoCloud
             resource_name = info.fetch('deployment_item_name')
           when 'SHARDED'
             resource_type = 'CLUSTER'
-            resource_name = info.fetch('name')
+            resource_name = info.fetch('deployment_item_name')
+            # Supposedly the resource name should be the cluster name,
+            # but that doesn't work and deployment item name appears to work.
+            #resource_name = info.fetch('name')
           else
             raise "Unknown cluster type"
           end
