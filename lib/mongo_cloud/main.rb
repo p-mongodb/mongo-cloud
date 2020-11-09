@@ -253,6 +253,10 @@ module MongoCloud
 
       client = Client.new(**global_options.slice(*%i(user password)))
 
+      if argv.empty?
+        argv = %w(list)
+      end
+
       case argv.shift
       when 'list'
         ap client.list_db_users(project_id: options[:project_id])
