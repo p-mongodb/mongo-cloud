@@ -237,6 +237,9 @@ module MongoCloud
       cluster_name: nil, resource_type: nil, resource_name: nil,
       redacted: true, file_size: 100_000_000, log_types: nil
     )
+      if log_types.nil?
+        raise ArgumentError, 'Log types are required'
+      end
       if cluster_name
         if resource_type.nil? && resource_name.nil?
           info = get_cluster_internal(project_id: project_id,

@@ -425,7 +425,27 @@ module MongoCloud
         cluster_id: global_options.delete(:cluster_id),
       }
 
-      project_id = get_project_id(options)
+      parser = OptionParser.new do |opts|
+        configure_global_options(opts)
+
+        opts.on('-p', '--project=PROJECT', String, 'Project ID') do |v|
+          options[:project_id] = v
+        end
+        opts.on('--resource-type=TYPE', String, 'Resource type') do |v|
+          options[:resource_type] = v
+        end
+        opts.on('--resource-name=NAME', String, 'Resource name') do |v|
+          options[:resource_name] = v
+        end
+        opts.on('--size=SIZE', String, 'Size per log file in bytes') do |v|
+          options[:file_size] = v.to_i
+        end
+        opts.on('--log-types=TYPES', String, 'Comma-separated log types') do |v|
+          options[:log_types] = v.split(',')
+        end
+      end.parse!(argv)
+
+      resolve_project_and_cluster(options)
 
       if argv.empty?
         argv = %w(list)
@@ -433,7 +453,16 @@ module MongoCloud
 
       case argv.shift
       when 'list'
-        ap client.list_log_collection_jobs(project_id: project_id)
+        ap client.list_log_collection_jobs(project_id: options[:project_id])
+      when 'create'
+        ap client.create_log_collection_job(
+          project_id: options[:project_id],
+          cluster_name: resolve_cluster_name(options[:cluster_id]),
+          resource_type: options[:resource_type],
+          resource_name: options[:resource_name],
+          file_size: options[:file_size] || 100_000_000,
+          log_types: options[:log_types],
+        )
       else
         raise 'bad usage'
       end
@@ -523,6 +552,10 @@ module MongoCloud
         info = client.get_project_by_name(options[:project_id])
         options[:project_id] = info['id']
       end
+    end
+
+    def resolve_cluster_name(id_or_name)
+      cache['cluster:id:name'].fetch(id_or_name, id_or_name)
     end
 
     def get_process_log(project_id:, hostname:, name:, **options)
