@@ -457,7 +457,11 @@ module MongoCloud
       when 'create'
         ap client.create_log_collection_job(
           project_id: options[:project_id],
-          cluster_name: resolve_cluster_name(options[:cluster_id]),
+          cluster_name: if options[:resource_type]
+            nil
+          else
+            resolve_cluster_name(options[:cluster_id])
+          end,
           resource_type: options[:resource_type],
           resource_name: options[:resource_name],
           file_size: options[:file_size] || 100_000_000,
