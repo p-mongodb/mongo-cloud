@@ -175,6 +175,10 @@ module MongoCloud
         client.create_cluster(project_id: options[:project_id],
           name: options.fetch(:name), **(options[:config] || {}),
         )
+      when 'status'
+        name = options[:cluster_id]
+        name = cache['cluster:id:name'].fetch(name, name)
+        ap client.cluster_status(project_id: options[:project_id], name: name)
       when 'test-failover'
         name = argv.shift || options[:cluster_id]
         name = cache['cluster:id:name'].fetch(name, name)

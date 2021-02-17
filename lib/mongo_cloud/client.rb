@@ -125,6 +125,10 @@ module MongoCloud
         opts)
     end
 
+    def cluster_status(project_id:, name:)
+      convert_keys(request_json(:get, "groups/#{escape(project_id)}/clusters/#{escape(name)}/status"))
+    end
+
     def reboot_cluster(project_id:, name:)
       request_json(:post, "/api/private/nds/groups/#{escape(project_id)}/clusters/#{escape(name)}/reboot", {}, {})
     end
