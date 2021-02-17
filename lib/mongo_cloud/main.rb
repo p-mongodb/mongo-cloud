@@ -61,8 +61,6 @@ module MongoCloud
         configure_global_options(opts)
       end.order!(argv)
 
-      client = Client.new(**global_options.slice(*%i(user password)))
-
       case argv.shift
       when 'list'
         ap client.list_orgs
@@ -78,8 +76,6 @@ module MongoCloud
       parser = OptionParser.new do |opts|
         configure_global_options(opts)
       end.order!(argv)
-
-      client = Client.new(**global_options.slice(*%i(user password)))
 
       if argv.empty?
         if options[:project_id]
@@ -222,8 +218,6 @@ module MongoCloud
         end
       end.parse!(argv)
 
-      client = Client.new(**global_options.slice(*%i(user password)))
-
       case argv.shift
       when 'list'
         ap client.list_whitelist_entries(project_id: options[:project_id])
@@ -254,8 +248,6 @@ module MongoCloud
           options[:project_id] = v
         end
       end.parse!(argv)
-
-      client = Client.new(**global_options.slice(*%i(user password)))
 
       if argv.empty?
         argv = %w(list)
@@ -335,7 +327,6 @@ module MongoCloud
         name = options[:cluster_id]
         name = cache['cluster:id:name'].fetch(name, name)
         info = client.get_cluster(project_id: project_id, name: name)
-        #require'byebug';byebug
         logs = %w(mongod mongod-audit)
         if info['cluster_type'] == 'SHARDED'
           logs += %w(mongos mongos-audit)
@@ -394,8 +385,6 @@ module MongoCloud
           options[:start_time] = Time.parse(v)
         end
       end.parse!(argv)
-
-      client = Client.new(**global_options.slice(*%i(user password)))
 
       if argv.empty?
         argv = %w(list)
@@ -490,6 +479,9 @@ module MongoCloud
       end
       opts.on('-c', '--cluster=CLUSTER', String, 'Cluster ID') do |v|
         global_options[:cluster_id] = v
+      end
+      opts.on('--verbose-api') do
+        global_options[:verbose_api] = true
       end
     end
 
@@ -648,7 +640,7 @@ module MongoCloud
     end
 
     def client
-      @client ||= Client.new(**global_options.slice(*%i(user password)))
+      @client ||= Client.new(**global_options.slice(*%i(user password verbose_api)))
     end
 
     class << self

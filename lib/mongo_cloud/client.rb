@@ -368,7 +368,9 @@ module MongoCloud
 
         f.request :url_encoded
         f.request :digest, username, password
-        f.response :detailed_logger, logger
+        if options[:verbose_api]
+          f.response :detailed_logger, logger
+        end
         f.adapter Faraday.default_adapter
         f.headers['user-agent'] = 'MongoCloudClient'
       end
